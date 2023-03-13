@@ -472,7 +472,7 @@ nospawn       ldx #$02 ;Empty space
               ;Clear all spawn columns 
               
 zerospawn     ldx #$00
-zeroloop      lda #$00
+zeroloop      lda #lane
               sta spawncolumn1,x
               sta spawncolumn2,x
               sta spawncolumn3,x
@@ -506,13 +506,20 @@ scrollplantsbottom
               sta rowtemp+10
               lda screen+(22*40)
               sta rowtemp+11
-              
+              lda colour+(21*40)
+              sta colourtemp+11
+              lda colour+(22*40)
+              sta colourtemp+12
               ldx #$00
 scrloop5
               lda screen+(21*40)+1,x
               sta screen+(21*40),x
               lda screen+(22*40)+1,x
               sta screen+(22*40),x
+              lda colour+(21*40)+1,x
+              sta colour+(21*40),x
+              lda colour+(22*40)+1,x
+              sta colour+(22*40),x
               inx
               cpx #$27
               bne scrloop5
@@ -521,6 +528,10 @@ scrloop5
               sta screen+(21*40)+39
               lda rowtemp+11
               sta screen+(22*40)+39
+              lda colourtemp+11
+              sta colour+(21*40)+39
+              lda colourtemp+12
+              sta colour+(22*40)+39
 skiprocksbottom              
               rts
               
@@ -577,7 +588,15 @@ testspawntime   lda #$00
 
                 jsr randomizer
                 sta sequencepointer
+                ldx sequencepointer
+                lda sequencetable0,x
+                sta rowvalue 
                 
+                lda rowvalue 
+                beq lowerspawn
+                jmp upperspawn
+lowerspawn                
+                jsr randomizer 
                 ldx sequencepointer
                 lda sequencetable1,x
                 sta objectread
@@ -618,8 +637,49 @@ testspawntime   lda #$00
                 sta destpos4+1
                 lda spawnpos4hi,x
                 sta destpos4+2
+                jmp makeobjects
+                
+upperspawn      ldx sequencepointer
+                lda sequencetable1,x
+                sta objectread
+                jsr randomizer
+                
+                ldx sequencepointer
+                lda sequencetable2,x
+                sta positionread
+                
+                ;Setup small object ID
+                
+                ldx objectread
+                lda smallobjectstopleft,x
+                sta objectread1+1
+                lda smallobjectstopright,x
+                sta objectread2+1
+                lda smallobjectsbottomleft,x
+                sta objectread3+1
+                lda smallobjectsbottomright,x
+                sta objectread4+1
+                
+                ldx positionread
+                lda spawnpos5lo,x
+                sta destpos1+1
+                lda spawnpos5hi,x
+                sta destpos1+2
+                lda spawnpos6lo,x
+                sta destpos2+1
+                lda spawnpos6hi,x
+                sta destpos2+2
+                lda spawnpos7lo,x
+                sta destpos3+1
+                lda spawnpos7hi,x
+                sta destpos3+2
+                lda spawnpos8lo,x
+                sta destpos4+1
+                lda spawnpos8hi,x
+                sta destpos4+2
                 
                 ;Now setup the objects and position
+makeobjects
                 
 objectread1     lda #banana1
 destpos1        sta spawncolumn1

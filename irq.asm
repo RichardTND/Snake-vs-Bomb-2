@@ -18,17 +18,12 @@ gameirq1        sta gstacka1+1
                 sta $d022
                 lda #$07
                 sta $d023
+                
 !ifdef testirqborder {                
                 lda #1
                 sta $d020
 }
-                
-!ifdef musicoff {                
-} else {
-                jsr musicplay
-}                
-                lda #1
-                sta rt
+               
                 ldx #<gameirq2
                 ldy #>gameirq2
                 stx $fffe
@@ -47,7 +42,7 @@ gameirq2        sta gstacka2+1
                 
                 lda #split2
                 sta $d012
-                lda #$18
+                lda #$10
                 sta $d016
                 lda #$1e
                 sta $d018
@@ -76,9 +71,21 @@ gameirq3        sta gstacka3+1
                 asl $d019
                 lda #split3
                 sta $d012
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
+               
                 lda d016table
                 ora #$10
                 sta $d016
+                nop
+                nop
+                nop
+                nop
+                nop
                 lda #$1c
                 sta $d018
 !ifdef testirqborder {                
@@ -107,9 +114,20 @@ gameirq4        sta gstacka4+1
                 asl $d019
                 lda #split4
                 sta $d012
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
                 lda d016table+1
                 ora #$10
                 sta $d016
+                nop
+                nop
+                nop
+                nop
+                nop
                 lda #$1a
                 sta $d018
 !ifdef testirqborder {                
@@ -137,11 +155,16 @@ gameirq5        sta gstacka5+1
                 asl $d019
                 lda #split5
                 sta $d012
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
                 lda d016table+2
                 ora #$10
                 sta $d016
-                lda #$1a
-                sta $d018
+                
 !ifdef testirqborder {                
                 lda #5
                 sta $d020
@@ -168,11 +191,16 @@ gameirq6        sta gstacka6+1
                 asl $d019
                 lda #split6
                 sta $d012
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
                 lda d016table+3
                 ora #$10
                 sta $d016
-                lda #$1a
-                sta $d018
+              
 !ifdef testirqborder {                
                 lda #6
                 sta $d020
@@ -196,11 +224,18 @@ gameirq7
                 asl $d019
                 lda #split7
                 sta $d012
+                
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
                 lda d016table+4
                 ora #$10
                 sta $d016
-                lda #$1a
-                sta $d018
+                 
+                 
 !ifdef testirqborder {                
                 lda #7
                 sta $d020
@@ -223,15 +258,27 @@ gameirq8
                 asl $d019
                 lda #split8
                 sta $d012
+                nop
+                nop
+                nop
+                nop
+                nop
+                nop
                 lda d016table+5
                 ora #$10
                 sta $d016
-                lda #$1a
-                sta $d018
+               
 !ifdef testirqborder {                
                 lda #8
                 sta $d020
 }
+  lda #1
+                sta rt
+!ifdef musicoff {                
+} else {
+                jsr musicplay
+}                
+               
                 ldx #<gameirq1
                 ldy #>gameirq1
                 stx $fffe

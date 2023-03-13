@@ -8,7 +8,7 @@
 ;For Retro Programmers Inside Snake Game Jam
 ;-------------------------------------------
 
-testirqborder = 1
+;testirqborder = 1
 ;musicoff = 1
 
 ;Variables/labels

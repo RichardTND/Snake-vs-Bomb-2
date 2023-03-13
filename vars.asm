@@ -13,7 +13,7 @@ split4 = $7a ;Parallax layer 1 - The rocks (top)
 split5 = $8a ;Parallax layer 2 - the plants (top)
 split6 = $da ;Main game scroll
 split7 = $ea;Paralax layer 4 - The plants (bottom)
-split8 = $fa ;Copy of split 7
+split8 = $fd ;Copy of split 7
 
 ;Object spawn row/column position
 
@@ -35,45 +35,58 @@ spawncolumn6b = spawncolumn6+1
 spawncolumn7b = spawncolumn7+1
 spawncolumn8b = spawncolumn8+1
 
-;Charset values for fruit
+;Charset values for lower half of canyon
 
-banana1 = 00 ;Banana top left
-banana2 = 83 ;Banana top right
-banana3 = 84 ;Banana bottom left
-banana4 = 85 ;Banana bottom right
+apple1 = 95 ;Apple top left
+apple2 = 96 ;Apple top right
+apple3 = 97 ;Apple bottom left 
+apple4 = 98 ;Apple bottom right
 
-cherry1 = 86 ;cherry top left
-cherry2 = 87 ;cherry top right
-cherry3 = 88 ;cherry bottom left
-cherry4 = 89 ;cherry bottom right
+banana1 = 99 ;Banana top left
+banana2 = 100 ;Banana top right
+banana3 = 101 ;Banana bottom left
+banana4 = 102 ;Banana bottom right
 
-strawberry1 = 90 ;strawberry top left
-strawberry2 = 91 ;strawberry top right
-strawberry3 = 92 ;strawberry bottom left
-strawberry4 = 93 ;strawberry bottom right
+cherry1 = 103 ;cherry top left
+cherry2 = 104 ;cherry top right
+cherry3 = 105 ;cherry bottom left
+cherry4 = 106 ;cherry bottom right
 
-bomb1 = 94 ;bomb top left
-bomb2 = 95 ;bomb top right
-bomb3 = 96 ;bomb bottom left
-bomb4 = 97 ;bomb bottom right
+strawberry1 = 107 ;strawberry top left
+strawberry2 = 108 ;strawberry top right
+strawberry3 = 109 ;strawberry bottom left
+strawberry4 = 110 ;strawberry bottom right
 
-score100a = 102 ;score 100 top left
-score100b = 103
-score100c = 104
-score100d = 105
+bomb1 = 111 ;bomb top left
+bomb2 = 112 ;bomb top right
+bomb3 = 114;bomb bottom left
+bomb4 = 115 ;bomb bottom right
 
-score200a = 106
-score200b = 107
-score200c = 108
-score200d = 109
+;Character values for upper half of canyon
 
-score300a = 110
-score300b = 111
-score300c = 112
-score300d = 113
+smallapple1 = 116; small apple top left
+smallapple2 = 117; small apple top right
+smallapple3 = 118; small apple bottom left
+smallapple4 = 119; small apple bottom right
 
-score500a = 114
-score500b = 115
-score500c = 116
-score500d = 117
+smallbanana1 = 120 ;small banana top left
+smallbanana2 = 121 ;small banana top right
+smallbanana3 = 122 ;small banana bottom left
+smallbanana4 = 123 ;small bannan bottom right
 
+smallcherry1 = 124 ;small cherry top left
+smallcherry2 = 125 ;small cherry top right
+smallcherry3 = 126 ;small cherry bottom left
+smallcherry4 = 127 ;small cherry bottom right
+
+smallstrawberry1 = 128 ;small strawberry top left
+smallstrawberry2 = 129 ;small strawberry top right
+smallstrawberry3 = 130 ;small strawberry bottom left
+smallstrawberry4 = 131 ;small strawberry bottom right
+
+smallbomb1 = 132 ;small bomb top left
+smallbomb2 = 133 ;small bomb top right
+smallbomb3 = 134 ;small bomb bottom left
+smallbomb4 = 135 ;small bomb bottom right
+
+lane = 170 ;Char ID for black empty lane
