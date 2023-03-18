@@ -11,8 +11,8 @@ gameirq1        sta gstacka1+1
                 sta $dd0d
                 lda #split1
                 sta $d012
-                 
-                lda #$1a
+               
+                lda #$1c
                 sta $d018
                 lda #$02
                 sta $d022
@@ -22,7 +22,14 @@ gameirq1        sta gstacka1+1
 !ifdef testirqborder {                
                 lda #1
                 sta $d020
-}
+} else {
+  nop
+  nop
+  nop
+  nop
+  nop
+}  
+            
                
                 ldx #<gameirq2
                 ldy #>gameirq2
@@ -42,18 +49,28 @@ gameirq2        sta gstacka2+1
                 
                 lda #split2
                 sta $d012
+               
                 lda #$10
                 sta $d016
+                
                 lda #$1e
                 sta $d018
 !ifdef testirqborder {                
                 lda #2
                 sta $d020
-}
+} else {
+  nop
+  nop
+  nop
+  nop
+  nop
+}  
+
                 lda #$09
                 sta $d022
                 lda #$01
                 sta $d023
+                
                 ldx #<gameirq3
                 ldy #>gameirq3
                 stx $fffe
@@ -71,13 +88,12 @@ gameirq3        sta gstacka3+1
                 asl $d019
                 lda #split3
                 sta $d012
+              
                 nop
                 nop
                 nop
                 nop
                 nop
-                nop
-               
                 lda d016table
                 ora #$10
                 sta $d016
@@ -86,12 +102,18 @@ gameirq3        sta gstacka3+1
                 nop
                 nop
                 nop
-                lda #$1c
+                lda #$12
                 sta $d018
 !ifdef testirqborder {                
                 lda #3
                 sta $d020
-}
+} else {
+  nop
+  nop
+  nop
+  nop
+  nop
+}  
 
                 lda #$07
                 sta $d022
@@ -114,26 +136,25 @@ gameirq4        sta gstacka4+1
                 asl $d019
                 lda #split4
                 sta $d012
-                nop
-                nop
-                nop
-                nop
-                nop
-                nop
+rline           ldx #$04
+                dex
+                bne *-1
                 lda d016table+1
                 ora #$10
                 sta $d016
-                nop
-                nop
-                nop
-                nop
-                nop
-                lda #$1a
+               
+                lda #$1c
                 sta $d018
 !ifdef testirqborder {                
                 lda #4
                 sta $d020
-}
+} else {
+  nop
+  nop
+  nop
+  nop
+  nop
+}  
                 lda #$02
                 sta $d022
                 lda #$07
@@ -168,7 +189,13 @@ gameirq5        sta gstacka5+1
 !ifdef testirqborder {                
                 lda #5
                 sta $d020
-}
+} else {
+  nop
+  nop
+  nop
+  nop
+  nop
+}  
 
                 lda #$02
                 sta $d022
@@ -204,7 +231,13 @@ gameirq6        sta gstacka6+1
 !ifdef testirqborder {                
                 lda #6
                 sta $d020
-}
+} else {
+  nop
+  nop
+  nop
+  nop
+  nop
+}  
                 
                 ldx #<gameirq7
                 ldy #>gameirq7
@@ -234,12 +267,18 @@ gameirq7
                 lda d016table+4
                 ora #$10
                 sta $d016
-                 
+ 
                  
 !ifdef testirqborder {                
                 lda #7
                 sta $d020
-}
+} else {
+  nop
+  nop
+  nop
+  nop
+  nop
+}  
                 ldx #<gameirq8
                 ldy #>gameirq8
                 stx $fffe
@@ -271,19 +310,24 @@ gameirq8
 !ifdef testirqborder {                
                 lda #8
                 sta $d020
-}
-  lda #1
-                sta rt
-!ifdef musicoff {                
 } else {
-                jsr musicplay
-}                
-               
+  nop
+  nop
+  nop
+  nop
+  nop
+}  
+                lda #1
+                sta rt
+                jsr musicplayer
                 ldx #<gameirq1
                 ldy #>gameirq1
                 stx $fffe
                 sty $ffff
                
+                 
+               
+ 
 gstacka8        lda #$00
 gstackx8        ldx #$00
 gstacky8        ldy #$00

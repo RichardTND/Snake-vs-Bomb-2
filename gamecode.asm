@@ -105,6 +105,13 @@ paint           ldy screen+(7*40),x
                 ;Place score panel on screen 
                 jsr maskscorepanel
                 
+                ldx #$00
+paintpanel      lda #$0d
+                sta colour,x
+                inx
+                cpx #40
+                bne paintpanel
+                
                 ;Initialize all necessary game pointers
                 
                 lda #0
@@ -123,8 +130,16 @@ paint           ldy screen+(7*40),x
                 lda #$40
                 sta spawndelayexpiry
                 
+                ;Setup the game sprites
+                
+                lda #0
+                sta spriteanimpointer ;Default animation speed and pointer
+                sta spriteanimdelay
+                
+                
 ;Prepare in game IRQ raster interrupts          
-
+                ldx #$fb
+                txs
                 ldx #<gameirq1
                 ldy #>gameirq1
                 lda #$7f
@@ -139,14 +154,94 @@ paint           ldy screen+(7*40),x
                 lda #$01
                 sta $d019
                 sta $d01a
-                lda #$01
+                lda #getreadymusic
                 jsr musicinit
                 cli
-                jmp gameloop
+                jmp getreadymain
                 
                 !source "irq.asm"
                 
+getreadymain
+                ;Enable all sprites
                 
+                lda #$00
+                sta $d015
+                sta $d01c
+                
+                ;Disable other sprite priorities
+                
+                lda #$00
+                sta $d017
+                sta $d01b
+                sta $d01d
+                sta firebutton 
+                
+getreadyloop    lda $dc00
+                lsr
+                lsr
+                lsr
+                lsr
+                lsr
+                bit firebutton
+                ror firebutton
+                bmi getreadyloop
+                bvc getreadyloop
+                lda #0
+                sta firebutton
+                
+setupmaingame                
+                
+                ;Setup the sprite position table to object position
+                
+                ldx #$00
+setstartpos     lda startpos,x
+                sta objpos,x
+                inx
+                cpx #$10
+                bne setstartpos
+                
+                ;Setup frames for player sprite
+                
+                lda largesnakehead
+                sta $07f8
+                lda largesnakebody
+                sta $07f9
+                lda largesnaketail
+                sta $07fa
+                
+                ;Setup colour scheme for player sprite
+                
+                ldx #$00
+setsprcolour    lda #$01
+                sta $d027,x
+                inx
+                cpx #8
+                bne setsprcolour
+                
+                lda #$05
+                sta $d025
+                lda #$07
+                sta $d026
+                
+                jsr expandmsb
+                
+                ;Enable all sprites
+                
+                lda #$ff
+                sta $d015
+                sta $d01c
+                
+                ;Disable other sprite priorities
+                
+                lda #$00
+                sta $d017
+                sta $d01b
+                sta $d01d
+                
+                lda #gamemusic
+                jsr musicinit
+                
+                jmp gameloop
 
 ; Kill of all IRQ interrupts that are currently playing also
 ; make a short delay, in order to prevent sensitive fire
@@ -192,25 +287,64 @@ delay2          iny
                 
 ;Main game loop
 
-gameloop        jsr synctimer     ;Synchronize game timer
-                jsr scrollcontrol
-                jsr levelcontrol
+gameloop        jsr synctimer       ;Synchronize game timer
+                jsr expandmsb       ;Expand sprite X position and store to hardware
+                jsr scrollcontrol    ;Main game screen scrolling
+                jsr levelcontrolmain
+                jsr playercontrol   ;Player, joystick and sprite/background collision control
+                
                 jmp gameloop
+                
+
+;Synchronize timer
+
+synctimer       lda #0
+                sta rt
+                cmp rt
+                beq *-3
+                ;Play music
+               ;jsr musicplayer
+                rts
+                
+;Music player (PAL NTSC)
+musicplayer     jsr musicplay
+                rts
+                
+;Expand X position for all game sprites
+                
+expandmsb       ldx #$00
+exploop         lda objpos+1,x
+                sta $d001,x
+                lda objpos,x
+                asl 
+                ror $d010
+                sta $d000,x
+                inx
+                inx
+                cpx #$10
+                bne exploop
+                rts             
+                                
+
                 
 ;Scroll controller
 scrollcontrol 
                 jsr parallax
-                jsr spawnlogic 
-                rts 
+                jmp spawnlogic 
+                
                 
 ;Game parallax routines
-parallax
+parallax        
+                
                 jsr scrollmountains
                 jsr scrollrockstop
                 jsr scrollplantstop
+             
+                
                 jsr scrollmainscreen
+              
                 jsr scrollplantsbottom
-                jsr scrollrocksbottom
+                jmp scrollrocksbottom
 skipmountainscroll
                rts
                 
@@ -565,13 +699,6 @@ scrloop6      lda screen+(23*40)+1,x
               sta screen+(24*40)+39
               rts
                 
-;Synchronize timer
-synctimer       lda #0
-                sta rt
-                cmp rt
-                beq *-3
-                rts
-                
 ;Game spawn logic
 
 spawnlogic       
@@ -720,41 +847,51 @@ randomizer      lda rand+1
                 
 ;Main game level control
 
-levelcontrol    lda leveltime
+levelcontrolmain
+
+                lda leveltime
                 cmp leveltimeexpiry ;milliseconds
                 beq nexttime
                 inc leveltime
                 rts
 nexttime        lda #0
                 sta leveltime
+                inc leveltime+1
+                inc $d020
                 lda leveltime+1
                 cmp #5
                 bne notpaintgold1
                 jmp paintsnakegold1
+                
 notpaintgold1   cmp #10
                 bne notpaintgold2
                 jmp paintsnakegold2
+                
 notpaintgold2   cmp #15
                 bne notpaintgold3
                 jmp paintsnakegold3
+                
 notpaintgold3   cmp #20
                 bne notpaintgold4
                 jmp paintsnakegold4
+                
 notpaintgold4   cmp #25
                 bne notpaintgold5
                 jmp paintsnakegold5
+                
 notpaintgold5   cmp #30  
                 bne notpaintgold6
                 jmp paintsnakegold6
+                
 notpaintgold6   cmp #35
                 bne notpaintgold7
                 jmp paintsnakegold7
+                
 notpaintgold7                
                 cmp #40
                 beq nextlevel
-skipcounter                
-                inc leveltime+1
                 rts
+                
 nextlevel       lda #0
                 sta leveltime
                 sta leveltime+1
@@ -780,25 +917,31 @@ gamecomplete
 
 paintsnakegold1 lda #$0f ;Yellow = gold
                 sta colour+24
-                jmp skipcounter
-paintsnakegold2 lda #$0f
+                rts
+paintsnakegold2 
+                lda #$0f
                 sta colour+25
-                jmp skipcounter
+                rts
+                
 paintsnakegold3 lda #$0f
                 sta colour+26
-                jmp skipcounter
+                rts
+                
 paintsnakegold4 lda #$0f
                 sta colour+27
-                jmp skipcounter
+                rts
+                
 paintsnakegold5 lda #$0f
                 sta colour+28
-                jmp skipcounter
+                rts
+                
 paintsnakegold6 lda #$0f
                 sta colour+29
-                jmp skipcounter
+                rts
+                
 paintsnakegold7 lda #$0f
                 sta colour+30
-                jmp skipcounter
+                rts
                 
 ;Paint snake green
 
@@ -811,19 +954,487 @@ paintloop       lda #$0d
                 bne paintloop
                 rts
                 
+;Player control (and animation)
+
+playercontrol   jsr spriteanimation       ;Animate the main player
+                jsr joystickcontrol       ;call joystick control for the main player
+                jsr snakerange            ;set snake range for size visual position of the snake sprites
+                jmp spritetocharcollision ;Sprite to charset collision routine (scoring, death, etc).
                 
+;Player joystick control (up or down only)
+
+joystickcontrol
+                lda #1
+                bit $dc00
+                bne checkgamejoydown
+                lda objpos+1
+                sec
+                sbc #2
+                cmp #$90
+                bcs updateupposition
+                lda #$90
+updateupposition                
+                sta objpos+1
+                sta objpos+3
+                sta objpos+5
+                rts
+checkgamejoydown
+                lda #2
+                bit $dc00
+                bne nogamejoycontrol
+                lda objpos+1
+                clc
+                adc #2
+                cmp #$c0
+                bcc updatebottomposition
+                lda #$c0
+updatebottomposition
+                sta objpos+1
+                sta objpos+3
+                sta objpos+5
+nogamejoycontrol                
+                rts
                 
+;Sprite animation routines 
+spriteanimation                
+                lda spriteanimdelay
+                cmp #5
+                beq animsprites
+                inc spriteanimdelay
+                rts
+animsprites     lda #0                
+                sta spriteanimdelay
+                ldx spriteanimpointer
+                lda largesnakeheadframe,x
+                sta largesnakehead
+                lda largesnakebodyframe,x
+                sta largesnakebody
+                lda largesnaketailframe,x
+                sta largesnaketail
+                lda smallsnakeheadframe,x
+                sta smallsnakehead
+                lda smallsnakebodyframe,x
+                sta smallsnakebody
+                lda smallsnaketailframe,x
+                sta smallsnaketail
+                inx
+                cpx #4
+                beq loopspriteanim
+                inc spriteanimpointer
+                rts
+loopspriteanim  ldx #0
+                stx spriteanimpointer
+                rts
+  
+;Check snake Y position range, so that the correct size frame
+;can be picked to be stored onto the actual sprite
+
+snakerange      lda objpos+1
+                cmp #$ac
+                bcc under
+                bcs over
+                rts
+over           ; lda #5
+               ; sta $d020
+                lda largesnakehead
+                sta $07f8
+                lda largesnakebody
+                sta $07f9
+                lda largesnaketail
+                sta $07fa
+                rts
+under          ; lda #2
+               ; sta $d020
+                lda smallsnakehead
+                sta $07f8
+                lda smallsnakebody
+                sta $07f9
+                lda smallsnaketail
+                sta $07fa
+                rts
+                
+;Sprite to background collision detection
+
+spritetocharcollision
+
+                lda objpos+1
+                sec
+colltesty       sbc #$32
+                lsr
+                lsr
+                lsr
+                tay
+                
+                lda screenlo,y
+                sta screenlostore
+                lda screenhi,y
+                sta screenhistore
+                
+                lda objpos 
+                sec
+colltestx       sbc #$07
+                lsr
+                lsr
+                tay
+                
+                ldx #$03
+                sty selfmodi+1
+                
+bgcloop         jmp  checkobjectchars
+
+selfmodi         ldy #$00
+                lda screenlostore
+                clc
+                adc #40
+                sta screenlostore
+                bcc skipmod
+                inc screenhistore
+skipmod         dex
+                bne bgcloop
+                rts
+                
+;Check object characters to see whether or not they relate to fruit or bombs
+   
+checkobjectchars 
+
+               ;Does the snake hit a large apple (Only read top left/right?
+               lda (screenlostore),y
+               cmp #apple1
+               bne notlargeapple
+               jmp appleeatenleft
+notlargeapple
+               cmp #apple2 
+               bne notlargeapple2
+               jmp appleeatenright
+notlargeapple2
+               ;Does the snake hit a small apple 
+               cmp #smallapple1
+               bne notsmallapple
+               jmp appleeatenleft
+notsmallapple
+               cmp #smallapple2
+               bne notsmallapple2
+               jmp appleeatenright
+notsmallapple2               
+               ;Does the snake hit a large banana?
+               cmp #banana1
+               bne notlargebanana
+               jmp bananaeatenleft
+notlargebanana               
+               cmp #banana2
+               bne notlargebanana2
+               jmp bananaeatenright
+notlargebanana2
+               ;Does the snake hit a small banana?
+               cmp #smallbanana1
+               bne notsmallbanana
+               jmp bananaeatenleft
+notsmallbanana                 
+               cmp #smallbanana2
+               bne notsmallbanana2 
+               jmp bananaeatenright
+               
+               ;Does the snake hit cherries?
+notsmallbanana2
+               cmp #cherry1
+               bne notcherry
+               jmp cherrieseatenleft
+               
+notcherry      cmp #cherry2               
+               bne notcherry2
+               jmp cherrieseatenright 
+               
+notcherry2     ;Does the snake hit small cherries?               
+               cmp #smallcherry1
+               bne notsmallcherry
+               jmp cherrieseatenleft
+               
+notsmallcherry
+               cmp #smallcherry2
+               bne notsmallcherry2
+               jmp cherrieseatenright
+               
+               ;Does the snake hit a large strawberry?
+notsmallcherry2               
+               cmp #strawberry1
+               bne notstrawberry
+               jmp strawberryeatenleft
+notstrawberry               
+               cmp #strawberry2
+               bne notstrawberry2
+               jmp strawberryeatenright 
+               
+               ;Does the snake hit a small strawberry
+notstrawberry2
+               cmp #smallstrawberry1
+               bne notsmallstrawberry
+               jmp strawberryeatenleft
+               
+notsmallstrawberry
+               cmp #smallstrawberry2
+               bne notsmallstrawberry2
+               jmp strawberryeatenright
+notsmallstrawberry2
+
+               ;Does the snake hit a large bomb?
+               cmp #bomb1
+               bne nothitbomb
+               jmp bombkillplayerleft
+nothitbomb     cmp #bomb2 
+               bne nothitbomb2
+               jmp bombkillplayerright
+nothitbomb2     
+               ;Does the snake hit a small bomb?
+               cmp #smallbomb1
+               bne nothitsmallbomb
+               jmp bombkillplayerleft
+nothitsmallbomb                
+               cmp #smallbomb2 
+               bne nothitsmallbomb2
+               jmp bombkillplayerright
+
+nothitsmallbomb2
+               jmp selfmodi
+               
+
+;Snake eats apple, remove apple, score 100 points and play
+;apple sound effects.
+
+appleeatenleft
+               jsr removecharleft
+               jsr score100
+               jmp playapplesfx
+               
+appleeatenright
+               jsr removecharright
+               jsr score100
+playapplesfx   lda #<snakeapplessfx
+               ldy #>snakeapplessfx
+               ldx #14
+               jsr sfxplay
+               rts
+               
+;Snake eats banana, remove banana, score 200 points and play
+;banana sound effects.
+
+bananaeatenleft
+              jsr removecharleft
+              jsr score200
+              jmp playbananasfx
+bananaeatenright
+              jsr removecharright
+              jsr score200
+playbananasfx    
+              lda #<snakebananasfx
+              ldy #>snakebananasfx
+              ldx #14
+              jsr sfxplay
+              rts
+              
+;Snake eats cherries, remove cherries, score 300 points and
+;play cherries sound effects.
+
+cherrieseatenleft
+              jsr removecharleft
+              jsr score300
+              jmp playcherriessfx
+cherrieseatenright              
+              jsr removecharright
+              jsr score300
+playcherriessfx
+              lda #<snakecherriessfx
+              ldy #>snakecherriessfx
+              ldx #14
+              jsr sfxplay
+              rts
+              
+;Snake eats strawberry, remove strawberry, score 500 points and
+;play strawberry sound effects.
+
+strawberryeatenleft
+              jsr removecharleft
+              jsr score500
+              jmp playstrawberrysfx
+strawberryeatenright
+              jsr removecharright
+              jsr score500
+playstrawberrysfx
+              lda #<snakestrawberrysfx
+              ldy #>snakestrawberrysfx
+              ldx #14
+              jsr sfxplay
+              rts
+              
+;Finally, the snake hits a bomb. Remove the bomb and destroy 
+;the snake.
+
+bombkillplayerleft 
+              jsr removecharleft
+              jmp killsnake
+              
+bombkillplayerright
+              jsr removecharright
+              
+;Kill the snake
+killsnake
+              lda #<bombsfx
+              ldy #>bombsfx
+              ldx #14
+              jsr sfxplay
+              
+              jmp snakedestroyer
+              
+               
+;Replace object characters as lane
+              
+;Remove characters from top left
+               
+removecharleft
+               lda #lane
+               sta (screenlostore),y
+               iny
+               sta (screenlostore),y
+               tya
+               sec
+               clc
+               adc #40
+               tay
+               lda #lane
+               sta (screenlostore),y
+               dey
+               sta (screenlostore),y
+               rts
+               
+;Remove characters from top right 
+
+removecharright
+               lda #lane
+               sta (screenlostore),y
+               dey
+               sta (screenlostore),y
+               tya
+               clc
+               adc #40
+               tay
+               lda #lane
+               sta (screenlostore),y
+               iny
+               sta (screenlostore),y
+               rts
+    
+;Add score values according to fruit eaten 
+
+score500      jsr score100points
+              jsr score100points
+score300      jsr score100points
+score200      jsr score100points
+score100      jmp score100points
+
+
+               
+;The player scores points for eating fruit 
+               
+score100points                
+              inc score+3
+              ldx #3
+scoreloop     lda score,x
+              cmp #$3a
+              bne scoreok
+              lda #$30
+              sta score,x
+              inc score-1,x
+scoreok       dex
+              bne scoreloop
+              jsr maskscorepanel
+              rts  
+            
 ;Mask status panel for score update
 
 maskscorepanel  ldx #$00
 putstatuspanel  lda statuspanel,x
                 sta screen,x
-                lda #$0d
-                sta colour,x
                 inx
                 cpx #$28
                 bne putstatuspanel
                 rts
+                
+;The main snake destroyer subroutine 
+
+snakedestroyer 
+                lda #0
+                sta explodeanimpointer
+                sta explodeanimdelay 
+                lda explosionframe
+                sta $07f8
+                sta $07f9
+                sta $07fa
+                
+explosionloop   jsr synctimer
+                jsr expandmsb
+                jsr animexplosion
+                jmp explosionloop
+animexplosion            
+                lda explodeanimdelay
+                cmp #3
+                beq explodeanimok
+                inc explodeanimdelay
+                rts
+explodeanimok   lda #0
+                sta explodeanimdelay
+                ldx explodeanimpointer
+                lda explosionframe,x
+                sta $07f8
+                sta $07f9
+                sta $07fa
+                inx
+                cpx #7
+                beq morphtodeadsnake
+                inc explodeanimpointer
+                rts
+                
+;Explosion has finished, morph explosion sprites to dead snake                
+
+morphtodeadsnake
+                ldx #0
+                stx explodeanimpointer
+                lda #1
+                sta $d027
+                sta $d028
+                sta $d029
+                
+                ;Check range again
+                
+                lda objpos+1
+                cmp #$ac
+                bcc issmalldeadsnake
+                bcs islargedeadsnake
+issmalldeadsnake
+                lda smalldeadsnakehead
+                ldx smalldeadsnakebody
+                ldy smalldeadsnaketail
+                sta $07f8
+                stx $07f9
+                sty $07fa
+                jmp gameover
+                
+islargedeadsnake
+                lda largedeadsnakehead
+                ldx largedeadsnakebody
+                ldy largedeadsnaketail 
+                sta $07f8
+                stx $07f9
+                sty $07fa
+                
+;Game over routine
+
+gameover        lda #gameovermusic
+                jsr musicinit
+                jmp *
+                
+
+
+                
+                
                 
                 !source "pointers.asm"
                     

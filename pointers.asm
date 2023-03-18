@@ -11,9 +11,27 @@ objectread !byte 0
 positionread !byte 0
 leveltime !byte 0,0
 leveltimeexpiry !byte $30
-
+spriteanimdelay !byte 0
+spriteanimpointer !byte 0
+explodeanimpointer !byte 0
+explodeanimdelay !byte 0
+firebutton !byte 0
 rtemp !byte 0
 rand !byte %10011101,%01011011
+
+;Sprite Animation pointers
+largesnakehead !byte $80
+largesnakebody !byte $83
+largesnaketail !byte $86
+smallsnakehead !byte $80
+smallsnakebody !byte $83
+smallsnaketail !byte $86
+largedeadsnakehead !byte $99
+largedeadsnakebody !byte $98
+largedeadsnaketail !byte $a3
+smalldeadsnakehead !byte $9b
+smalldeadsnakebody !byte $9a
+smalldeadsnaketail !byte $a3
 
 ;Scroll - spawn column. The first and second table values are selfmod for where the objects get placed
 ;the third should be set as zero
@@ -31,6 +49,34 @@ spawncolumn8    !byte $00,$00,$00,$00
 d016table       !byte $10,$10,$10,$10,$10,$10             
 rowtemp         !byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00       
 colourtemp      !byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+
+;SPRITE ANIMATION FRAMES
+
+largesnakeheadframe  !byte $80,$81,$82,$81
+largesnakebodyframe  !byte $83,$84,$85,$84
+largesnaketailframe  !byte $86,$87,$88,$87
+
+smallsnakeheadframe  !byte $80,$81,$82,$81
+smallsnakebodyframe  !byte $83,$84,$85,$84
+smallsnaketailframe  !byte $86,$87,$88,$87 
+
+explosionframe       !byte $9c,$9d,$9e,$9f,$a0,$a1,$a2
+
+;OBJECT POSITION TABLE
+
+startpos !byte $30+24, $a8
+         !byte $30+12, $a8
+         !byte $30, $a8
+         !byte $00,$00
+         !byte $00,$00
+         !byte $00,$00
+         !byte $00,$00
+         !byte $00,$00
+
+objpos !byte $00,$00,$00,$00,$00,$00,$00,$00
+       !byte $00,$00,$00,$00,$00,$00,$00,$00
+;STARTING POSITION TABLE
+
 
 ;SPAWN POSITION TABLES - LOWER HALF OF GAME SCREEN
 
@@ -99,7 +145,9 @@ smallobjectsbottomright !byte smallapple4, smallbanana4, smallcherry4, smallstra
 statuspanel     !text " score "
 score           !text "000000 "
                 !text " distance "
-distancemarker  !text "+££££][ " 
+distancemarker  !text "+"
+                !byte 28,28,28,28
+                !text "][ " 
                 !text "level "
 level           !text "1"
 
@@ -166,7 +214,53 @@ sequencetable2  !byte 3,7,2,4,0,1,4,3,5,1,6,2,4,0,4,2 ;Sequence table 1
                 !byte 5,1,2,0,4,3,4,6,3,2,5,7,3,2,1,5 ;Sequence table 14
                 !byte 3,5,3,4,7,3,1,2,5,3,7,3,5,4,2,6 ;Sequence table 15
                 !byte 2,4,1,6,4,5,3,2,3,1,7,4,3,5,1,2 ;Sequence table 16
+   
+;Screen low and hi byte pointers for sprite to background collision reader
+;subroutine.
+
+screenhi        !byte $04,$04,$04,$04,$04
+                !byte $04,$04,$05,$05,$05
+                !byte $05,$05,$05,$06,$06
+                !byte $06,$06,$06,$06,$06
+                !byte $07,$07,$07,$07,$07 
                 
+screenlo        !byte $00,$28,$50,$78,$a0
+                !byte $c8,$f0,$18,$40,$68
+                !byte $90,$b8,$e0,$08,$30
+                !byte $58,$80,$a8,$d0,$f8
+                !byte $20,$48,$70,$98,$c0 
                 
+;Sound effects tables
+
+;Snake eats apple and scores 100 points
+snakeapplessfx
+        !byte $0E,$00,$08,$B0,$41,$B2,$B4,$B6,$B7,$B8,$BA,$BC,$BE,$C0,$C2,$C4
+        !byte $C8,$CA,$00
+
+;Snake eats banana and scores 200 points
+snakebananasfx
+        !byte $0E,$00,$08,$D0,$41,$CC,$C8,$C4,$C0,$BC,$B8,$B4,$B8,$BC,$C0,$C4
+        !byte $C8,$CC,$00
+
+;Snake eats cherries and score 300 points
+snakecherriessfx
+        !byte $0E,$00,$08,$C0,$41,$C0,$C4,$CC,$C8,$C8,$CC,$C4,$C0,$C8,$C0,$00
+
+;Snake eats strawberry and score 500 points
+snakestrawberrysfx
+        !byte $0E,$00,$08,$AC,$41,$B0,$B4,$B7,$AC,$B0,$B4,$B7,$AC,$B0,$B4,$B7
+        !byte $AC,$B0,$B4,$B7,$00
+
+;Snake eats/hits bomb and dies
+bombsfx
+       !byte $0E,$EE,$08,$AF,$41,$DF,$81,$AD,$41,$AB,$A9,$CF,$81,$CF,$CF,$CF
+       !byte $00
+
+;Level complete sound effects
+levelupsfx
+        !byte $0E,$EE,$08,$B0,$41,$B1,$B2,$B3,$B4,$B5,$B6,$B7,$B8,$B9,$BA,$B9
+        !byte $BA,$BB,$BC,$BD,$B0,$B1,$B2,$B3,$B4,$B5,$B6,$B7,$B8,$B9,$BA,$B9
+        !byte $BA,$BB,$BC,$BD,$B0,$B1,$B2,$B3,$B4,$B5,$B6,$B7,$B8,$B9,$BA,$B9
+        !byte $BA,$BB,$BC,$BD,$00                
                 
                 

@@ -1,10 +1,17 @@
 
 ;VARIABLES/LABELS
 
+titlemusic = 0
+gamemusic = 1
+gameovermusic = 2
+getreadymusic = 3
+gamecompletemusic = 4
+
 screen = $0400 ;Assigned screen RAM 
 colour = $d800 ;Assigned colour RAM
-musicinit = $1000
-musicplay = $1003
+musicinit = $8000
+musicplay = $8003
+sfxplay = $8006 
 
 split1 = $22 ;Paralax layer 5 - The rocks (bottom)
 split2 = $3a ;Status panel
@@ -90,3 +97,6 @@ smallbomb3 = 134 ;small bomb bottom left
 smallbomb4 = 135 ;small bomb bottom right
 
 lane = 170 ;Char ID for black empty lane
+
+screenlostore = $70 ;Zero pages for self mod 
+screenhistore = $71 ;sprite/char collision

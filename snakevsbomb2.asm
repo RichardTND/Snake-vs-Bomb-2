@@ -22,28 +22,18 @@
         !byte $0b,$08,$e7,$07,$9e,$32,$30,$36,$31,$00
                         
 ;SYS 2061 code run
-        *=$080d
         
-        ;Disable KERNAL routines
-        lda #$35
-        sta $01
-        jmp gamestart
-
-;Insert relocated music data (Program format)
-        *=$1000
-        !bin "c64/music.prg",,2    
+;Insert mountain charset data (Binary)        
+        *=$0800
+        !bin "c64/mountains_charset.bin"
         
 ;Insert sprite data (Binary)
         *=$2000
         !bin "c64/sprites.bin"
         
 ;Insert game charset data (Binary)        
-        *=$2800
-        !bin "c64/canyon_charset.bin"
-        
-;Insert mountain charset data (Binary)        
         *=$3000
-        !bin "c64/mountains_charset.bin"
+        !bin "c64/canyon_charset.bin"
         
 ;Insert text charset data
         *=$3800
@@ -68,7 +58,12 @@ mountainattribs
 ;Snake vs bomb game code
 
         *=$4800
+        lda #$35
+        sta $01
+        
         !source "gamecode.asm"
                     
-                    
+;Insert relocated music data (Program format)
+        *=$8000
+        !bin "c64/music.prg",,2                        
                         
