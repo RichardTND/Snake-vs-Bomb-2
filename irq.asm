@@ -319,7 +319,7 @@ gameirq8
 }  
                 lda #1
                 sta rt
-                jsr musicplayer
+                jsr musicplay 
                 ldx #<gameirq1
                 ldy #>gameirq1
                 stx $fffe

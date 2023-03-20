@@ -4,9 +4,10 @@
 ;Call routine to stop existing interrupts/IRQs from
 ;playing and also switch the screen off. 
 
+                lda #$35
+                sta $01
 gamestart       jsr killirqs
-                ldx #$fb
-                txs
+               
                 
 ;Grab all graphics map data and place those onto the screen.
 ;Panel = 1 row (leave blank), Mountains = 6 rows, Canyon = 18 rows
@@ -101,6 +102,29 @@ paint           ldy screen+(7*40),x
                 lda #$00
                 sta $d020
                 sta $d021 
+                
+                ;Reset level and score panel 
+                
+                
+                lda #$31
+                sta level
+                ldx #$00
+zeroscore       lda #$30
+                sta score,x
+                inx
+                cpx #$06
+                bne zeroscore
+                
+              
+                ;Initialize the lane
+                
+                ldx #$00
+setlane         lda #lane
+                sta spawncolumn1,x
+                inx
+                cpx #32
+                bne setlane
+                
                
                 ;Place score panel on screen 
                 jsr maskscorepanel
@@ -135,10 +159,10 @@ paintpanel      lda #$0d
                 lda #0
                 sta spriteanimpointer ;Default animation speed and pointer
                 sta spriteanimdelay
-                
+        
                 
 ;Prepare in game IRQ raster interrupts          
-                ldx #$fb
+                lda #$fb
                 txs
                 ldx #<gameirq1
                 ldy #>gameirq1
@@ -147,7 +171,8 @@ paintpanel      lda #$0d
                 sty $ffff
                 sta $dc0d
                 sta $dd0d
-                lda #$36
+                 
+                lda #$00
                 sta $d012
                 lda #$1b
                 sta $d011
@@ -176,7 +201,45 @@ getreadymain
                 sta $d01d
                 sta firebutton 
                 
-getreadyloop    lda $dc00
+                ;Setup the GET READY sprites
+                
+                ldx #$00
+makegrsprites   lda getreadyspritetable,x
+                sta $07f8,x
+                lda #$01
+                sta $d027,x
+                inx
+                cpx #4
+                bne makegrsprites
+                
+                lda #$a8
+                sta objpos+1
+                sta objpos+3
+                sta objpos+5
+                sta objpos+7
+                lda #$44
+                sta objpos
+                clc
+                adc #$0c
+                sta objpos+2
+                adc #$0c
+                sta objpos+4
+                adc #$0c
+                sta objpos+6
+               
+                lda #%00001111
+                sta $d015
+                sta $d01c
+                lda #$05
+                sta $d025
+                lda #$07
+                sta $d026
+                
+                
+getreadyloop    jsr synctimer
+                jsr expandmsb
+               
+                lda $dc00
                 lsr
                 lsr
                 lsr
@@ -248,22 +311,26 @@ setsprcolour    lda #$01
 ;button pressing
 
 killirqs        sei
-                lda #$00
-                sta $d019
-                sta $d01a
-                sta $d015
-                sta $d01b
-                lda #$81
-                sta $dc0d
-                sta $dd0d
-                ldx #$48
-                ldy #$ff
-                stx $fffe
-                sty $ffff
+               ; ldx #$48
+               ; ldy #$ff
+               ; stx $fffe
+               ; sty $ffff
                 ldx #<nmi
                 ldy #>nmi
                 stx $fffa
                 sty $fffb
+                lda #$00
+                sta $d011
+                sta $d019
+                sta $d01a
+                sta $d015
+                sta $d01b
+               
+                lda #$81
+                sta $dc0d
+                sta $dd0d
+               
+                
                 
                 ;Silence the SID chip
                 ldx #$00
@@ -272,6 +339,16 @@ quiet           lda #$00
                 inx
                 cpx #$18
                 bne quiet
+                
+                ;Sprite position also 
+                
+                ldx #$00
+zerosprposy     lda #$00
+                sta $d000,x
+                sta objpos,x
+                inx
+                cpx #$10
+                bne zerosprposy
                 
                 ;Pointless, but useful delay routine
                 
@@ -293,6 +370,7 @@ gameloop        jsr synctimer       ;Synchronize game timer
                 jsr levelcontrolmain
                 jsr playercontrol   ;Player, joystick and sprite/background collision control
                 
+                jsr animbombs
                 jmp gameloop
                 
 
@@ -303,11 +381,55 @@ synctimer       lda #0
                 cmp rt
                 beq *-3
                 ;Play music
-               ;jsr musicplayer
+                
+                rts
+                
+;Animate bombs
+
+animbombs       lda bombanimdelay
+                cmp #3
+                beq animatebomb
+                inc bombanimdelay
+                rts
+animatebomb     lda #0
+                sta bombanimdelay
+                ldx #0
+animbloop1      lda animbombsrc1,x
+                sta animbombsrc1+(7*8),x
+                lda animbombsrc2,x
+                sta animbombsrc2+(7*8),x
+                inx
+                cpx #$08
+                bne animbloop1
+                ldx #$00
+animbloop2      lda animbombsrc1+8,x
+                sta animbombsrc1,x
+                lda animbombsrc2+8,x
+                sta animbombsrc2,x
+                inx
+                cpx #$38
+                bne animbloop2
+                ldx #$00
+animbloop3      lda animbombsrc1,x
+                sta gamecharset+(bomb2*8),x
+                lda animbombsrc2,x
+                sta gamecharset+(smallbomb2*8),x
+                inx
+                cpx #8
+                bne animbloop3
                 rts
                 
 ;Music player (PAL NTSC)
-musicplayer     jsr musicplay
+musicplayer     lda system
+                bne pal
+                inc ntsctimer
+                lda ntsctimer
+                cmp #6
+                beq resetmusdelay
+pal             jsr musicplay
+                rts
+resetmusdelay   lda #0
+                sta ntsctimer
                 rts
                 
 ;Expand X position for all game sprites
@@ -554,6 +676,12 @@ scrloop4      lda screen+(11*40)+1,x
               sta screen+(14*40),x
               lda screen+(15*40)+1,x
               sta screen+(15*40),x
+              inx
+              cpx #$27
+              bne scrloop4
+              
+              ldx #$00
+scrloop4b              
               lda screen+(16*40)+1,x
               sta screen+(16*40),x
               lda screen+(17*40)+1,x
@@ -567,7 +695,7 @@ scrloop4      lda screen+(11*40)+1,x
               
               inx
               cpx #$27
-              bne scrloop4
+              bne scrloop4b
               
               lda rowtemp+15
               sta screen+(11*40)+39
@@ -600,8 +728,8 @@ scrloop4      lda screen+(11*40)+1,x
               rts
 nospawn       ldx #$02 ;Empty space
               stx spawnvalue
-              jsr zerospawn
-              rts
+              jmp zerospawn
+              
               
               ;Clear all spawn columns 
               
@@ -849,6 +977,11 @@ randomizer      lda rand+1
 
 levelcontrolmain
 
+!ifdef testgameend {
+                jmp gamecomplete 
+                }
+              
+                jsr scrolllevup
                 lda leveltime
                 cmp leveltimeexpiry ;milliseconds
                 beq nexttime
@@ -857,7 +990,7 @@ levelcontrolmain
 nexttime        lda #0
                 sta leveltime
                 inc leveltime+1
-                inc $d020
+               
                 lda leveltime+1
                 cmp #5
                 bne notpaintgold1
@@ -905,13 +1038,160 @@ nextlevel       lda #0
                 inc level
                 jsr maskscorepanel
                 jsr paintsnakegreen
+                
+                ;Position level up sprites and make them scroll across the screen
+                ldx #$00
+makesprs        lda levelupspritetable,x
+                sta $07fb,x
+                lda #$05
+                sta $d02a,x
+                inx
+                cpx #$04
+                bne makesprs
+                
+                ldx #$00
+poslevup        lda levuppostable,x
+                sta objpos+6,x
+                inx
+                cpx #$08
+                bne poslevup
+                
+                lda #<levelupsfx
+                ldy #>levelupsfx
+                ldx #14
+                jsr sfxplay
                 rts
 
 ;Game completed
 gamecomplete
-                inc $d020
-                jmp *-3
+                jsr synctimer
+                jsr expandmsb
+                jsr spriteanimation
+                jsr moveplayeroutofscene
+                jsr snakerange
+                jsr parallax
+                jmp gamecomplete
+
+;Move the snake out of the game scenery.
+
+moveplayeroutofscene
+                lda objpos+4
+                clc
+                adc #1
+                cmp #$e0
+                bcc notexitend
+                jmp allspritesout
+notexitend      sta objpos+4
+                lda objpos+2
+                clc
+                adc #1
+                sta objpos+2
+                lda objpos
+                clc
+                adc #1
+                sta objpos
+                rts
+                
+;Scrolling stops, and well done sprites appear on screen.
+
+;Enable all sprites
+allspritesout               
+                lda #gamecompletemusic
+                jsr musicinit
+                
+                lda #$00
+                sta $d015
+                sta $d01c
+                
+                ;Disable other sprite priorities
+                
+                lda #$00
+                sta $d017
+                sta $d01b
+                sta $d01d
+                sta firebutton 
+                
+                ;Setup the GET READY sprites
+                
+                ldx #$00
+makewdsprites   lda welldonespritetable,x
+                sta $07f8,x
+                lda #$01
+                sta $d027,x
+                inx
+                cpx #4
+                bne makewdsprites
+                
+                lda #$a8
+                sta objpos+1
+                sta objpos+3
+                sta objpos+5
+                sta objpos+7
+                lda #$44
+                sta objpos
+                clc
+                adc #$0c
+                sta objpos+2
+                adc #$0c
+                sta objpos+4
+                adc #$0c
+                sta objpos+6
+               
+                lda #%00001111
+                sta $d015
+                sta $d01c
+                lda #$05
+                sta $d025
+                lda #$07
+                sta $d026
+                lda #0
+                sta firebutton
+wdloop          jsr synctimer      
+                jsr expandmsb
+                jsr parallax
+                
+                lda $dc00
+                lsr
+                lsr
+                lsr
+                lsr
+                lsr
+                bit firebutton
+                ror firebutton
+                bmi wdloop
+                bvc wdloop
+                jmp endscreen
+                
+                
+                
+                ;Continue animation, but make snake slither out of the screen.
+                
   
+;Scroll level up sprites across the screen. After they have
+;left the screen, remove them                
+                
+scrolllevup     
+                lda objpos+12
+                sec
+                sbc #2
+                cmp #$02
+                bcs notoffset
+                lda #$00
+                sta objpos+7
+                sta objpos+9
+                sta objpos+11
+                sta objpos+13
+                rts
+notoffset       sta objpos+12
+                lda objpos+12
+                 
+                sbc #12
+                sta objpos+10
+                sbc #12
+                sta objpos+8
+                sbc #12
+                sta objpos+6
+                rts
                 
 ;Paint snake gold according to distance
 
@@ -956,7 +1236,8 @@ paintloop       lda #$0d
                 
 ;Player control (and animation)
 
-playercontrol   jsr spriteanimation       ;Animate the main player
+playercontrol  
+                jsr spriteanimation       ;Animate the main player
                 jsr joystickcontrol       ;call joystick control for the main player
                 jsr snakerange            ;set snake range for size visual position of the snake sprites
                 jmp spritetocharcollision ;Sprite to charset collision routine (scoring, death, etc).
@@ -1032,10 +1313,10 @@ loopspriteanim  ldx #0
 snakerange      lda objpos+1
                 cmp #$ac
                 bcc under
+                cmp #$ac
                 bcs over
                 rts
-over           ; lda #5
-               ; sta $d020
+over             
                 lda largesnakehead
                 sta $07f8
                 lda largesnakebody
@@ -1043,8 +1324,7 @@ over           ; lda #5
                 lda largesnaketail
                 sta $07fa
                 rts
-under          ; lda #2
-               ; sta $d020
+under          
                 lda smallsnakehead
                 sta $07f8
                 lda smallsnakebody
@@ -1201,12 +1481,12 @@ nothitsmallbomb2
 ;apple sound effects.
 
 appleeatenleft
-               jsr removecharleft
+               jsr appleto100ptsleft
                jsr score100
                jmp playapplesfx
                
 appleeatenright
-               jsr removecharright
+               jsr appleto100ptsright
                jsr score100
 playapplesfx   lda #<snakeapplessfx
                ldy #>snakeapplessfx
@@ -1218,11 +1498,11 @@ playapplesfx   lda #<snakeapplessfx
 ;banana sound effects.
 
 bananaeatenleft
-              jsr removecharleft
+              jsr bananato200ptsleft
               jsr score200
               jmp playbananasfx
 bananaeatenright
-              jsr removecharright
+              jsr bananato200ptsright
               jsr score200
 playbananasfx    
               lda #<snakebananasfx
@@ -1235,11 +1515,11 @@ playbananasfx
 ;play cherries sound effects.
 
 cherrieseatenleft
-              jsr removecharleft
+              jsr cherriesto300ptsleft
               jsr score300
               jmp playcherriessfx
 cherrieseatenright              
-              jsr removecharright
+              jsr cherriesto300ptsright
               jsr score300
 playcherriessfx
               lda #<snakecherriessfx
@@ -1252,11 +1532,11 @@ playcherriessfx
 ;play strawberry sound effects.
 
 strawberryeatenleft
-              jsr removecharleft
+              jsr strawberryto500ptsleft
               jsr score500
               jmp playstrawberrysfx
 strawberryeatenright
-              jsr removecharright
+              jsr strawberryto500ptsright
               jsr score500
 playstrawberrysfx
               lda #<snakestrawberrysfx
@@ -1322,6 +1602,154 @@ removecharright
                sta (screenlostore),y
                rts
     
+;Turn apple  char into 100 points
+
+appleto100ptsleft
+              lda #points100a
+              sta (screenlostore),y
+              iny
+              lda #points100b
+              sta (screenlostore),y
+              tya
+              clc
+              adc #40
+              tay
+              lda #points100d
+              sta (screenlostore),y
+              dey
+              lda #points100c
+              sta (screenlostore),y
+              rts
+              
+appleto100ptsright
+              inc $d020
+              lda #points100b
+              sta (screenlostore),y
+              dey
+              lda #points100a
+              sta (screenlostore),y
+              tya
+              clc
+              adc #40
+              tay
+              lda #171
+              sta (screenlostore),y
+              iny
+              lda #points100d
+              sta (screenlostore),y
+              rts
+              
+;Transform banana into 200 points              
+              
+bananato200ptsleft              
+              lda #points200a
+              sta (screenlostore),y
+              iny
+              lda #points200b
+              sta (screenlostore),y
+              tya
+              clc
+              adc #40
+              tay
+              lda #points200d
+              sta (screenlostore),y
+              dey
+              lda #points200c
+              sta (screenlostore),y
+              rts
+              
+bananato200ptsright
+              lda #points200b
+              sta (screenlostore),y
+              dey
+              lda #points200a
+              sta (screenlostore),y
+              tya
+              clc
+              adc #40
+              tay
+              lda #points200c
+              sta (screenlostore),y
+              iny
+              lda #points200d
+              sta (screenlostore),y
+              rts
+              
+;Transform cherries to 300 points              
+
+cherriesto300ptsleft
+              lda #points300a
+              sta (screenlostore),y
+              iny
+              lda #points300b
+              sta (screenlostore),y
+              tya
+              clc
+              adc #40
+              tay
+              lda #points300d
+              sta (screenlostore),y
+              dey
+              lda #points300c
+              sta (screenlostore),y
+              rts
+              
+cherriesto300ptsright
+              lda #points300b
+              sta (screenlostore),y
+              dey
+              lda #points300a
+              sta (screenlostore),y
+              tya
+              clc
+              adc #40
+              tay
+              lda #points300c
+              sta (screenlostore),y
+              iny
+              lda #points300d
+              sta (screenlostore),y
+              rts
+              
+;Transform stawberry to 500 points
+
+strawberryto500ptsleft
+              lda #points500a
+              sta (screenlostore),y
+              iny
+              lda #points500b
+              sta (screenlostore),y
+              tya
+              clc
+              adc #40
+              tay
+              lda #points500d
+              sta (screenlostore),y
+              dey
+              lda #points500c
+              sta (screenlostore),y
+              rts
+              
+strawberryto500ptsright
+              lda #points500b
+              sta (screenlostore),y
+              dey
+              lda #points500a
+              sta (screenlostore),y
+              tya
+              clc
+              adc #40
+              tay
+              lda #points500c
+              sta (screenlostore),y
+              iny
+              lda #points500d
+              sta (screenlostore),y
+              rts
+
+              
+              
+               
 ;Add score values according to fruit eaten 
 
 score500      jsr score100points
@@ -1423,13 +1851,71 @@ islargedeadsnake
                 ldy largedeadsnaketail 
                 sta $07f8
                 stx $07f9
-                sty $07fa
                 
 ;Game over routine
 
 gameover        lda #gameovermusic
                 jsr musicinit
-                jmp *
+                
+                ldx #0
+makegameoverspr lda gameoverspritetable,x
+                sta $07fa,x
+                lda #$05
+                sta $d029,x
+                inx
+                cpx #6
+                bne makegameoverspr
+                
+;Now place game over sprites
+
+                ldx #$00
+readgopos       lda gameoverpos,x
+                sta objpos+4,x
+                inx
+                cpx #$0c
+                bne readgopos
+               
+                
+;Game over loop
+                jsr maskscorepanel
+                
+                lda #0
+                sta firebutton
+gameoverloop                
+                jsr synctimer
+                jsr expandmsb
+                jsr spritesinus
+                
+                lda $dc00
+                lsr
+                lsr
+                lsr
+                lsr
+                lsr
+                bit firebutton
+                ror firebutton
+                bmi gameoverloop
+                bvc gameoverloop
+                
+                jmp gamestart
+                
+spritesinus     ldx sinuspointer
+                lda sinus,x
+                sta objpos+4
+                lda objpos+4
+                clc
+                adc #12
+                sta objpos+6
+                adc #12
+                sta objpos+8
+                adc #12
+                sta objpos+10
+                adc #12
+                sta objpos+12
+                adc #12
+                sta objpos+14
+                inc sinuspointer
+                rts
                 
 
 

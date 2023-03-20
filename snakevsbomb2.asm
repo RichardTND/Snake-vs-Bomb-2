@@ -6,8 +6,8 @@
 ;Music / SFX by Richard Bayliss
 ;(C)2023 The New Dimension
 ;For Retro Programmers Inside Snake Game Jam
-;-------------------------------------------
-
+;------------------------------------------- 
+;testgameend = 1
 ;testirqborder = 1
 ;musicoff = 1
 
@@ -16,12 +16,6 @@
 
 ;Generate program source
         !to "snakevsbomb2.prg",cbm
-        
-;Generate SYS 2061 header
-        *=$0801
-        !byte $0b,$08,$e7,$07,$9e,$32,$30,$36,$31,$00
-                        
-;SYS 2061 code run
         
 ;Insert mountain charset data (Binary)        
         *=$0800
@@ -33,6 +27,7 @@
         
 ;Insert game charset data (Binary)        
         *=$3000
+gamecharset        
         !bin "c64/canyon_charset.bin"
         
 ;Insert text charset data
@@ -58,10 +53,16 @@ mountainattribs
 ;Snake vs bomb game code
 
         *=$4800
-        lda #$35
-        sta $01
         
+        ;PAL NTSC check routine
+    
         !source "gamecode.asm"
+        
+        !align $ff,$00
+        !source "endscreen.asm"
+        !align $ff,$00
+endscreentext
+        !bin "c64/endscreen.bin"
                     
 ;Insert relocated music data (Program format)
         *=$8000

@@ -1,7 +1,9 @@
 
 ;GAME POINTERS
-             
-rt !byte 0
+rt !byte 0           
+system !byte 0
+ntsctimer !byte 0  
+
 spawndelay !byte 0
 spawndelayexpiry !byte $c0 
 spawnvalue !byte 0
@@ -17,6 +19,8 @@ explodeanimpointer !byte 0
 explodeanimdelay !byte 0
 firebutton !byte 0
 rtemp !byte 0
+sinuspointer !byte 0
+bombanimdelay !byte 0
 rand !byte %10011101,%01011011
 
 ;Sprite Animation pointers
@@ -32,6 +36,30 @@ largedeadsnaketail !byte $a3
 smalldeadsnakehead !byte $9b
 smalldeadsnakebody !byte $9a
 smalldeadsnaketail !byte $a3
+
+;Game over pointers
+
+gameoverspritetable !byte $92,$93,$94,$95,$96,$97
+                    !byte 0
+levelupspritetable  !byte $a3,$a4,$a5,$a6
+welldonespritetable !byte $a7,$a8,$a9,$aa
+getreadyspritetable !byte $ab,$ac,$ad,$ae
+
+gameoverpos         !byte $38,$a4
+                    !byte $38+12,$a4
+                    !byte $38+24,$a4
+                    !byte $38+36,$a4
+                    !byte $38+48,$a4
+                    !byte $38+60,$a4
+                    
+     
+levuppostable       !byte $b0,$a4                    
+                    !byte $b0+12,$a4
+                    !byte $b0+24,$a4
+                    !byte $b0+36,$a4
+                    
+                    
+                    
 
 ;Scroll - spawn column. The first and second table values are selfmod for where the objects get placed
 ;the third should be set as zero
@@ -56,9 +84,9 @@ largesnakeheadframe  !byte $80,$81,$82,$81
 largesnakebodyframe  !byte $83,$84,$85,$84
 largesnaketailframe  !byte $86,$87,$88,$87
 
-smallsnakeheadframe  !byte $80,$81,$82,$81
-smallsnakebodyframe  !byte $83,$84,$85,$84
-smallsnaketailframe  !byte $86,$87,$88,$87 
+smallsnakeheadframe  !byte $89,$8a,$8b,$8a
+smallsnakebodyframe  !byte $8c,$8d,$8e,$8d
+smallsnaketailframe  !byte $8f,$90,$91,$90 
 
 explosionframe       !byte $9c,$9d,$9e,$9f,$a0,$a1,$a2
 
@@ -77,7 +105,7 @@ objpos !byte $00,$00,$00,$00,$00,$00,$00,$00
        !byte $00,$00,$00,$00,$00,$00,$00,$00
 ;STARTING POSITION TABLE
 
-
+  !align $ff,$00
 ;SPAWN POSITION TABLES - LOWER HALF OF GAME SCREEN
 
 ;Low and hi-byte table for the spawn position values - These indicate positioning of the top left characters
@@ -214,6 +242,52 @@ sequencetable2  !byte 3,7,2,4,0,1,4,3,5,1,6,2,4,0,4,2 ;Sequence table 1
                 !byte 5,1,2,0,4,3,4,6,3,2,5,7,3,2,1,5 ;Sequence table 14
                 !byte 3,5,3,4,7,3,1,2,5,3,7,3,5,4,2,6 ;Sequence table 15
                 !byte 2,4,1,6,4,5,3,2,3,1,7,4,3,5,1,2 ;Sequence table 16
+   
+;Sprite sinus table
+sinus !byte 55,54,53,52,51,50
+      !byte 49,48,47,46,45,44
+      !byte 43,42,41,40,39,38
+      !byte 37,36,35,35,34,33
+      !byte 32,31,30,29,29,28
+      !byte 27,26,26,25,24,23
+      !byte 23,22,22,21,20,20
+      !byte 19,19,18,18,18,17
+      !byte 17,16,16,16,15,15
+      !byte 15,15,15,14,14,14
+      !byte 14,14,14,14,14,14
+      !byte 14,14,14,15,15,15
+      !byte 15,15,16,16,16,17
+      !byte 17,17,18,18,19,19
+      !byte 20,20,21,21,22,23
+      !byte 23,24,25,25,26,27
+      !byte 28,28,29,30,31,32
+      !byte 33,33,34,35,36,37
+      !byte 38,39,40,41,42,43
+      !byte 44,45,46,47,48,49
+      !byte 50,51,52,53,54,55
+      !byte 56,57,59,60,61,62
+      !byte 63,64,65,66,67,68
+      !byte 69,70,71,72,73,74
+      !byte 75,76,77,78,79,79
+      !byte 80,81,82,83,84,85
+      !byte 85,86,87,88,88,89
+      !byte 90,91,91,92,92,93
+      !byte 94,94,95,95,96,96
+      !byte 96,97,97,98,98,98
+      !byte 99,99,99,99,99,100
+      !byte 100,100,100,100,100,100
+      !byte 100,100,100,100,100,99
+      !byte 99,99,99,99,98,98
+      !byte 98,97,97,97,96,96
+      !byte 95,95,94,94,93,93
+      !byte 92,91,91,90,89,89
+      !byte 88,87,86,86,85,84
+      !byte 83,82,81,81,80,79
+      !byte 78,77,76,75,74,73
+      !byte 72,71,70,69,68,67 
+      !byte 66,65,64,63,62,61
+      !byte 60,59,58,57
+      
    
 ;Screen low and hi byte pointers for sprite to background collision reader
 ;subroutine.

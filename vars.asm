@@ -96,7 +96,27 @@ smallbomb2 = 133 ;small bomb top right
 smallbomb3 = 134 ;small bomb bottom left
 smallbomb4 = 135 ;small bomb bottom right
 
-lane = 170 ;Char ID for black empty lane
+lane = 94 ;Char ID for black empty lane
 
 screenlostore = $70 ;Zero pages for self mod 
 screenhistore = $71 ;sprite/char collision
+
+points100a = 169
+points100b = 170
+points100c = 171
+points100d = 172
+points200a = 173
+points200b = 174
+points200c = 175
+points200d = 176
+points300a = 177
+points300b = 178
+points300c = 179
+points300d = 180
+points500a = 181
+points500b = 182
+points500c = 183
+points500d = 184
+
+animbombsrc1 = gamecharset+(149*8)
+animbombsrc2 = gamecharset+(161*8)
