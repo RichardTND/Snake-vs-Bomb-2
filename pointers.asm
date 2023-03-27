@@ -304,37 +304,28 @@ screenlo        !byte $00,$28,$50,$78,$a0
                 !byte $58,$80,$a8,$d0,$f8
                 !byte $20,$48,$70,$98,$c0 
                 
-;Sound effects tables
-
-;Snake eats apple and scores 100 points
-snakeapplessfx
+snakeapplessfx:
         !byte $0E,$00,$08,$B0,$41,$B2,$B4,$B6,$B7,$B8,$BA,$BC,$BE,$C0,$C2,$C4
         !byte $C8,$CA,$00
 
-;Snake eats banana and scores 200 points
-snakebananasfx
+snakebananasfx:
         !byte $0E,$00,$08,$D0,$41,$CC,$C8,$C4,$C0,$BC,$B8,$B4,$B8,$BC,$C0,$C4
         !byte $C8,$CC,$00
 
-;Snake eats cherries and score 300 points
-snakecherriessfx
+snakecherriessfx:
         !byte $0E,$00,$08,$C0,$41,$C0,$C4,$CC,$C8,$C8,$CC,$C4,$C0,$C8,$C0,$00
 
-;Snake eats strawberry and score 500 points
-snakestrawberrysfx
+snakestrawberrysfx:
         !byte $0E,$00,$08,$AC,$41,$B0,$B4,$B7,$AC,$B0,$B4,$B7,$AC,$B0,$B4,$B7
         !byte $AC,$B0,$B4,$B7,$00
 
-;Snake eats/hits bomb and dies
-bombsfx
+bombsfx:
        !byte $0E,$EE,$08,$AF,$41,$DF,$81,$AD,$41,$AB,$A9,$CF,$81,$CF,$CF,$CF
        !byte $00
 
-;Level complete sound effects
-levelupsfx
+levelupsfx:
         !byte $0E,$EE,$08,$B0,$41,$B1,$B2,$B3,$B4,$B5,$B6,$B7,$B8,$B9,$BA,$B9
         !byte $BA,$BB,$BC,$BD,$B0,$B1,$B2,$B3,$B4,$B5,$B6,$B7,$B8,$B9,$BA,$B9
         !byte $BA,$BB,$BC,$BD,$B0,$B1,$B2,$B3,$B4,$B5,$B6,$B7,$B8,$B9,$BA,$B9
-        !byte $BA,$BB,$BC,$BD,$00                
-                
-                
+        !byte $BA,$BB,$BC,$BD,$00
+

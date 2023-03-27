@@ -4,10 +4,16 @@
 ;Call routine to stop existing interrupts/IRQs from
 ;playing and also switch the screen off. 
 
-                lda #$35
-                sta $01
 gamestart       jsr killirqs
                
+                ldx #$00
+clearscreennow  lda #$20
+                sta screen,x
+                sta screen+$100,x
+                sta screen+$200,x
+                sta screen+$2e8,x
+                inx
+                bne clearscreennow
                 
 ;Grab all graphics map data and place those onto the screen.
 ;Panel = 1 row (leave blank), Mountains = 6 rows, Canyon = 18 rows
@@ -162,7 +168,7 @@ paintpanel      lda #$0d
         
                 
 ;Prepare in game IRQ raster interrupts          
-                lda #$fb
+                ldx #$fb
                 txs
                 ldx #<gameirq1
                 ldy #>gameirq1
@@ -311,10 +317,10 @@ setsprcolour    lda #$01
 ;button pressing
 
 killirqs        sei
-               ; ldx #$48
-               ; ldy #$ff
-               ; stx $fffe
-               ; sty $ffff
+                ldx #$48
+                ldy #$ff
+                stx $fffe
+                sty $ffff
                 ldx #<nmi
                 ldy #>nmi
                 stx $fffa
@@ -364,23 +370,26 @@ delay2          iny
                 
 ;Main game loop
 
-gameloop        jsr synctimer       ;Synchronize game timer
-                jsr expandmsb       ;Expand sprite X position and store to hardware
-                jsr scrollcontrol    ;Main game screen scrolling
+gameloop         
+                jsr synctimer       ;Synchronize game timer
+                jsr scrollcontrol   ;Main game screen scrolling
+               
+              
                 jsr levelcontrolmain
                 jsr playercontrol   ;Player, joystick and sprite/background collision control
                 
                 jsr animbombs
+                jsr scrolllevup
+                  jsr expandmsb       ;Expand sprite X position and store to hardware
                 jmp gameloop
                 
 
 ;Synchronize timer
 
-synctimer       lda #0
-                sta rt
-                cmp rt
-                beq *-3
-                ;Play music
+synctimer       ldy #0
+                sty rt
+                cpy rt
+                beq *-3 
                 
                 rts
                 
@@ -452,21 +461,26 @@ exploop         lda objpos+1,x
 ;Scroll controller
 scrollcontrol 
                 jsr parallax
-                jmp spawnlogic 
+                jsr spawnlogic 
                 
+                rts
+parallax          jsr scrollmountains
                 
-;Game parallax routines
-parallax        
-                
-                jsr scrollmountains
                 jsr scrollrockstop
                 jsr scrollplantstop
-             
                 
-                jsr scrollmainscreen
-              
+                 jsr scrollmainscreen
                 jsr scrollplantsbottom
-                jmp scrollrocksbottom
+                jsr scrollrocksbottom
+                
+               
+              
+              
+                rts
+              
+              
+                
+                
 skipmountainscroll
                rts
                 
@@ -507,14 +521,19 @@ scrollmountains
                 sta colourtemp+4
                 lda colour+(6*40)
                 sta colourtemp+5
-
+       
                 ldx #$00
-scrloop1        lda screen+(1*40)+1,x
+scrloop0        lda screen+(1*40)+1,x
                 sta screen+(1*40),x
                 lda screen+(2*40)+1,x
                 sta screen+(2*40),x
                 lda screen+(3*40)+1,x
                 sta screen+(3*40),x
+                inx
+                cpx #$27
+                bne scrloop0
+                ldx #$00
+scrloop1                  
                 lda screen+(4*40)+1,x
                 sta screen+(4*40),x
                 lda screen+(5*40)+1,x
@@ -524,14 +543,19 @@ scrloop1        lda screen+(1*40)+1,x
                 inx
                 cpx #$27
                 bne scrloop1
-                
+  
                 ldx #$00
-scrloop1b       lda colour+(1*40)+1,x
+scrloop1a       lda colour+(1*40)+1,x
                 sta colour+(1*40),x
                 lda colour+(2*40)+1,x
                 sta colour+(2*40),x
                 lda colour+(3*40)+1,x
                 sta colour+(3*40),x
+                inx
+                cpx #$27
+                bne scrloop1a
+                ldx #$00
+scrloop1b                
                 lda colour+(4*40)+1,x
                 sta colour+(4*40),x
                 lda colour+(5*40)+1,x
@@ -541,7 +565,7 @@ scrloop1b       lda colour+(1*40)+1,x
                 inx
                 cpx #$27
                 bne scrloop1b
-                
+                       
                 lda rowtemp
                 sta screen+(1*40)+39
                 lda rowtemp+1
@@ -570,8 +594,8 @@ scrloop1b       lda colour+(1*40)+1,x
 skiprockstop                
                 rts
 
-;Scroll the rocks at the top of the screen
-                
+
+               
 scrollrockstop                
                lda d016table+1
                sec
@@ -600,8 +624,6 @@ scrloop2       lda screen+(7*40)+1,x
                sta screen+(8*40)+39
 skipplantstop               
                rts
-                
-;Scroll the plants at the top of the screen
 
 scrollplantstop
                lda d016table+2
@@ -627,13 +649,19 @@ scrloop3       lda screen+(9*40)+1,x
                sta screen+(9*40),x
                lda screen+(10*40)+1,x
                sta screen+(10*40),x
+               inx
+               cpx #$27
+               bne scrloop3
+               
+               ldx #$00
+scrloop3b                  
                lda colour+(9*40)+1,x
                sta colour+(9*40),x
                lda colour+(10*40)+1,x
                sta colour+(10*40),x
                inx
                cpx #$27
-               bne scrloop3
+               bne scrloop3b
                
                lda rowtemp+8
                sta screen+(9*40)+39
@@ -713,6 +741,7 @@ scrloop4b
               sta spawnrow3
               lda spawncolumn4,x
               sta spawnrow4
+             
               lda spawncolumn5,x
               sta spawnrow5
               lda spawncolumn6,x
@@ -778,13 +807,18 @@ scrloop5
               sta screen+(21*40),x
               lda screen+(22*40)+1,x
               sta screen+(22*40),x
+              inx
+              cpx #$27
+              bne scrloop5
+              ldx #$00
+scrloop5b              
               lda colour+(21*40)+1,x
               sta colour+(21*40),x
               lda colour+(22*40)+1,x
               sta colour+(22*40),x
               inx
               cpx #$27
-              bne scrloop5
+              bne scrloop5b
               
               lda rowtemp+10
               sta screen+(21*40)+39
@@ -977,15 +1011,13 @@ randomizer      lda rand+1
 
 levelcontrolmain
 
-!ifdef testgameend {
-                jmp gamecomplete 
-                }
-              
-                jsr scrolllevup
+
+               
                 lda leveltime
                 cmp leveltimeexpiry ;milliseconds
                 beq nexttime
                 inc leveltime
+                 
                 rts
 nexttime        lda #0
                 sta leveltime
@@ -1036,6 +1068,7 @@ nextlevel       lda #0
                 sbc #8
                 sta spawndelayexpiry
                 inc level
+                jsr award1000points
                 jsr maskscorepanel
                 jsr paintsnakegreen
                 
@@ -1111,7 +1144,7 @@ allspritesout
                 sta $d01d
                 sta firebutton 
                 
-                ;Setup the GET READY sprites
+             
                 
                 ldx #$00
 makewdsprites   lda welldonespritetable,x
@@ -1184,7 +1217,7 @@ scrolllevup
                 rts
 notoffset       sta objpos+12
                 lda objpos+12
-                 
+                sec
                 sbc #12
                 sta objpos+10
                 sbc #12
@@ -1775,6 +1808,21 @@ scoreok       dex
               bne scoreloop
               jsr maskscorepanel
               rts  
+              
+;Award 1000 points for level completion              
+award1000points
+              inc score+2
+              ldx #2
+scoreloop2    lda score,x
+              cmp #$3a
+              bne scoreok2
+              lda #$30
+              sta score,x
+              inc score-1,x
+scoreok2       dex
+              bne scoreloop2
+              jsr maskscorepanel
+              rts
             
 ;Mask status panel for score update
 
@@ -1897,7 +1945,7 @@ gameoverloop
                 bmi gameoverloop
                 bvc gameoverloop
                 
-                jmp gamestart
+                jmp checkhiscore
                 
 spritesinus     ldx sinuspointer
                 lda sinus,x

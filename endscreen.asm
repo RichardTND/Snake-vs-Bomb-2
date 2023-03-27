@@ -59,7 +59,7 @@ endloop           lda $dc00
                   ror firebutton
                   bmi endloop
                   bvc endloop
-                  jmp gamestart
+                  jmp checkhiscore
 singleirq         sta stacka+1                  
                   stx stackx+1
                   sty stacky+1
@@ -70,7 +70,8 @@ singleirq         sta stacka+1
                   sta $d012
                   lda #1
                   sta rt
-                  jsr musicplay
+                  jsr musicplayer
+                  jsr titleanimbombs
 stacka            lda #0
 stackx            ldx #0
 stacky            ldy #0

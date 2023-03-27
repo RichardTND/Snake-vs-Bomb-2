@@ -3,8 +3,8 @@
 
 titlemusic = 0
 gamemusic = 1
-gameovermusic = 2
-getreadymusic = 3
+getreadymusic = 2
+gameovermusic = 3
 gamecompletemusic = 4
 
 screen = $0400 ;Assigned screen RAM 
@@ -16,11 +16,11 @@ sfxplay = $8006
 split1 = $22 ;Paralax layer 5 - The rocks (bottom)
 split2 = $3a ;Status panel
 split3 = $6a ;Mountains
-split4 = $7a ;Parallax layer 1 - The rocks (top)
+split4 = $79 ;Parallax layer 1 - The rocks (top)
 split5 = $8a ;Parallax layer 2 - the plants (top)
 split6 = $da ;Main game scroll
 split7 = $ea;Paralax layer 4 - The plants (bottom)
-split8 = $fd ;Copy of split 7
+split8 = $f8 ;Copy of split 7
 
 ;Object spawn row/column position
 
@@ -101,22 +101,64 @@ lane = 94 ;Char ID for black empty lane
 screenlostore = $70 ;Zero pages for self mod 
 screenhistore = $71 ;sprite/char collision
 
-points100a = 169
+;Charset ID that form the scoring chars 
+
+points100a = 169 ;100 (2x2)
 points100b = 170
 points100c = 171
 points100d = 172
-points200a = 173
+
+points200a = 173 ;200 (2x2)
 points200b = 174
 points200c = 175
 points200d = 176
-points300a = 177
+
+points300a = 177 ;300 (2x2)
 points300b = 178
 points300c = 179
 points300d = 180
-points500a = 181
+
+points500a = 181 ;500 (2x2)
 points500b = 182
 points500c = 183
 points500d = 184
 
+;Bomb animation charset target 
+
 animbombsrc1 = gamecharset+(149*8)
 animbombsrc2 = gamecharset+(161*8)
+animbombsrct = titlecharset+(84*8)
+
+;Hi score table variables
+
+scorelen = 6 ;No. of digits used for score
+namelen = 9  ;No. of digits used for name
+listlen = 10 ;No. of hi scores and names on list
+
+;namestart = $a6a3     ;Target position for first character for name
+name1 = $a6a3
+name2 = $a6cb
+name3 = $a6f3
+name4 = $a71b
+name5 = $a743
+name6 = $a6b7
+name7 = $a6df
+name8 = $a707
+name9 = $a72f
+name10 = $a757
+
+;hiscorestart = $a6ad  ;Target position for first digit for hi score
+hiscore1 = $a6ad
+hiscore2 = $a6d5
+hiscore3 = $a6fd
+hiscore4 = $a725
+hiscore5 = $a74d
+hiscore6 = $a6c1
+hiscore7 = $a6e9
+hiscore8 = $a711
+hiscore9 = $a739
+hiscore10 = $a761
+
+namescreenpos = $0707 ;Screen position in which the name should be displayed 
+
+
