@@ -18,43 +18,48 @@
         !to "snakevsbomb2.prg",cbm
         
 ;Insert mountain charset data (Binary)        
-        *=$0800 "MOUNTAIN GRAPHICS CHARSET"
+        *=$0800 ;"MOUNTAIN GRAPHICS CHARSET"
         !bin "c64/mountains_charset.bin"
         
+        *=$1000 "DISK ACCESS"
+        !source "diskaccess.asm"
 ;Insert sprite data (Binary)
-        *=$2000 "GAME SPRITE DATA"
+        *=$2000 ;"GAME SPRITE DATA"
         !bin "c64/sprites.bin"
         
 ;Insert game charset data (Binary)        
-        *=$3000 "MAIN GAME (CANYON) CHARSET"
+        *=$3000 ;"MAIN GAME (CANYON) CHARSET"
 gamecharset        
         !bin "c64/canyon_charset.bin"
         
 ;Insert text charset data
-        *=$3800 "STATUS PANEL AND TEXT CHARSET"
+        *=$3800 ;"STATUS PANEL AND TEXT CHARSET"
 titlecharset        
         !bin "c64/text_charset.bin" 
 ;Insert canyon map data
-        *=$4000 "CANYON SCREEN DATA"
+        *=$4000 ;"CANYON SCREEN DATA"
 canyon        
         !bin "c64/canyon_map.bin"
         
 ;Insert mountains map data        
-        *=$4400 "MOUNTAIN SCREEN DATA"
+        *=$4400 ;"MOUNTAIN SCREEN DATA"
 mountains        
         !bin "c64/mountains_map.bin"
 ;Insert canyon attributes        
-      *=$4600 "CANYON COLOUR DATA"
+      *=$4600 ;"CANYON COLOUR DATA"
 canyonattribs
         !bin "c64/canyon_attribs.bin"      
-;Insert mountains attributes
-      *=$4700 "MOUNTAIN COLOUR DATA"       
-mountainattribs 
-        !bin "c64/mountains_attribs.bin"
+
 ;Snake vs bomb game code
 
-        *=$4800 "MAIN START"
+        *=$5000; "MAIN START"
         
+        lda #$36
+        sta $01
+        lda $ba
+        sta device
+        lda #251
+        sta 808
         ;PAL NTSC check routine
 checksystem    
         lda $d012
@@ -65,61 +70,58 @@ checksystem
         bcc ntsc 
         lda #1
         sta system
-        lda #$12
-        sta rline+1
+       ;lda #$12
+       ;sta rline+1
         jmp startmaincode 
 ntsc    lda #0
         sta system 
-        lda #$0e
-        sta rline+1
+     ;  lda #$0e
+     ;  sta rline+1
   
 startmaincode             
-        lda #$35
-        sta $01
-        jmp  titlescreen
-!align $ff,$00          
-      
+        jsr loadhiscores
+       ; jmp gamestart
+        jmp titlescreen
+ 
         !source "gamecode.asm"
         
-        !align $ff,$00
+     
         !source "endscreen.asm"
-        !align $ff,$00
+      
 endscreentext
         !bin "c64/endscreen.bin"
-        !align $ff,$00
+    
         ;Title screen code
         !source "titlescreen.asm"
-        !align $ff,00
+       
         ;Hi score code
         !source "hiscore.asm"
         
 ;Insert relocated music data (Program format)
-        *=$8000 "MUSIC DATA"
-       ; !for i = 1 to 7
-       ;   !byte $60
-       ; !end
-        !bin "c64/music.prg",,2           
+        *=$8000 ;"MUSIC DATA"
+        
+       !bin "c64/music.prg",,2           
     
 ;Insert credits text
 
-        *=$a400 "Credits text"
+        *=$a400 ;"Credits text"
 creditstext
         !bin "c64/text_credits.bin"
-        *=$a600 "Hi score table"
+        *=$a600 ;"Hi score table"
 ;Insert hi score list
 hiscoretable
         !bin "c64/text_hiscores.bin"
-        *=$a800 "Scoring advance object list"
+        *=$a800 ;"Scoring advance object list"
 ;Insert scoring list        
 scoringlist
         !bin "c64/text_scoring.bin"
-        *=$aa00 "Name entry text"
+        *=$aa00 ;"Name entry text"
 ;Insert name screen
 namescreen 
         !bin "c64/text_nameentry.bin"        
     
 ;Scroll text 
-       *=$b000 "SCROLL TEXT MESSAGE"
+       *=$b000 ;"SCROLL TEXT MESSAGE"
        !ct scr
 scrolltext
        !text "                                                          "
@@ -135,10 +137,10 @@ scrolltext
        !text "your hungry snake is on a long journey across a huge canyon across the nevada desert ...   using up and down on your "
        !text "joystick (plugged into port 2), safely eat the fruit, but avoid touching the deadly bombs, otherwise your snake will be no more ...   you "
        !text "will encounter many of these deadly bombs on the way ...   you will score a bonus of 1,000 points for every level completed ...   try to complete all eight levels if you can ...   "
-       !text "good luck! ...    this game was programmed and compiled using endurion's c64studio v7.3.1.1 "
+       !text "good luck! ...    this game was programmed and compiled using endurion's c64studio "
        !text "...   the graphics were drawn by hugues using multipaint by dr. terrorz, charpad and spritepad by subchrist software ...   i designed the 1x1 text charset and converted to 1x2 charset using char expander by alpha flight 1970 ...   "
        !text "the music and sound effects were done by me using gt ultra v1.4.1.1 ...   "
-       !text "finally this game was squeezed down with antonio savona's latest version of tscruncher v1.3 ...   special thanks goes to "
+       !text "finally this game was squeezed down with antonio savona's latest version of tscruncher ...   special thanks goes to "
        !text "hugues poisseroux for the game's graphics, bitmap logo and loading bitmap ...   jason page for gt ultra ...    finally, a huge thank you goes to "
        !text "emanuel bonin and prince/phaze 101 for broadcasting this game live at the game jam ...   also to you for downloading "
        !text "this game and playing it on your commodore 64, thec64 mini/maxi, ultimate64 or your other devices that support this game ...   "
@@ -149,17 +151,17 @@ scrolltext
 
 ;Insert logo video RAM
   
-        *=$c400 "BITMAP LOGO: VIDEO RAM"
-        !bin "c64/logovidram.prg",,2
+        *=$c400 ;"BITMAP LOGO: VIDEO RAM"
+        !bin "c64/logocolram.prg",,2
 
 ;Insert logo colour ram data       
   
-       *=$c800 "BITMAP LOGO: COLOUR RAM"
+       *=$c800 ;"BITMAP LOGO: COLOUR RAM"
 logocolram       
-       !bin "c64/logocolram.prg",,2
+       !bin "c64/logovidram.prg",,2
 
 ;Insert logo bitmap data
 
-       *=$e000 "BITMAP LOGO: BITMAP"
+       *=$e000 ;"BITMAP LOGO: BITMAP"
        !bin "c64/logobitmap.prg",,2
                                

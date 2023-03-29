@@ -1,6 +1,6 @@
-
+ 
 ;GAME POINTERS
-rt !byte 0           
+    
 system !byte 0
 ntsctimer !byte 0  
 
@@ -22,7 +22,7 @@ rtemp !byte 0
 sinuspointer !byte 0
 bombanimdelay !byte 0
 rand !byte %10011101,%01011011
-
+*=$6000
 ;Sprite Animation pointers
 largesnakehead !byte $80
 largesnakebody !byte $83
@@ -35,7 +35,6 @@ largedeadsnakebody !byte $98
 largedeadsnaketail !byte $a3
 smalldeadsnakehead !byte $9b
 smalldeadsnakebody !byte $9a
-smalldeadsnaketail !byte $a3
 
 ;Game over pointers
 
@@ -74,12 +73,12 @@ spawncolumn6    !byte $00,$00,$00,$00
 spawncolumn7    !byte $00,$00,$00,$00
 spawncolumn8    !byte $00,$00,$00,$00
 
-d016table       !byte $10,$10,$10,$10,$10,$10             
-rowtemp         !byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00       
-colourtemp      !byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+d016table       !byte $10,$10,$10,$10,$10,$10,$10
+;rowtemp         !byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00       
+;colourtemp      !byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 
 ;SPRITE ANIMATION FRAMES
-
+!align $ff,0
 largesnakeheadframe  !byte $80,$81,$82,$81
 largesnakebodyframe  !byte $83,$84,$85,$84
 largesnaketailframe  !byte $86,$87,$88,$87
@@ -92,8 +91,8 @@ explosionframe       !byte $9c,$9d,$9e,$9f,$a0,$a1,$a2
 
 ;OBJECT POSITION TABLE
 
-startpos !byte $30+24, $a8
-         !byte $30+12, $a8
+startpos !byte $48, $a8
+         !byte $3c, $a8
          !byte $30, $a8
          !byte $00,$00
          !byte $00,$00
@@ -303,29 +302,35 @@ screenlo        !byte $00,$28,$50,$78,$a0
                 !byte $90,$b8,$e0,$08,$30
                 !byte $58,$80,$a8,$d0,$f8
                 !byte $20,$48,$70,$98,$c0 
-                
-snakeapplessfx:
-        !byte $0E,$00,$08,$B0,$41,$B2,$B4,$B6,$B7,$B8,$BA,$BC,$BE,$C0,$C2,$C4
+!ALIGN $FF,$00
+
+snakeapplessfx
+        !byte $0E,$00,$08,$B0,$41,$BA,$B8,$B6,$B4,$B2,$B0,$B2,$B4,$B6,$B8,$BA
+        !byte $00
+
+snakebananasfx
+        !byte $0E,$00,$08,$D0,$41,$BA,$BC,$BE,$C0,$C2,$C4,$C6,$C4,$C2,$C0,$BE
+        !byte $BC,$BA,$00
+ 
+snakecherriessfx
+        !byte $0E,$EE,$08,$B0,$41,$D2,$C4,$B6,$A7,$B8,$CA,$DC,$CE,$B0,$A2,$00
+
+snakestrawberrysfx
+        !byte $0E,$EE,$08,$B0,$41,$B0,$B4,$B4,$B7,$B7,$BC,$BC,$C0,$C0,$BC,$BC
+                        !byte $B7,$B7,$B4,$B4,$B0,$B0,$A0,$10,$00
+
+bombsfx
+      !byte $0F,$FA,$08,$ac,$41,$A8,$41,$C0,$81,$BE,$BC,$80,$BA,$B8,$B6,$B4
+                        !byte $B2,$B0,$AE,$AC,$AA,$A8,$A6,$A4,$A2,$A0,$9E,$9C,$9A,$98,$96,$94
+                        !byte $92,$90,$00
+;Alarm sound for level up
+levelupsfx
+        !byte $0E,$EE,$08,$B0,$41,$B2,$B4,$B6,$B7,$B8,$BA,$BC,$BE,$C0,$C2,$C4
+        !byte $C8,$CA
+        !byte $B2,$B4,$B6,$B7,$B8,$BA,$BC,$BE,$C0,$C2,$C4
+        !byte $C8,$CA
+        !byte $B2,$B4,$B6,$B7,$B8,$BA,$BC,$BE,$C0,$C2,$C4
+        !byte $C8,$CA
+        !byte $B2,$B4,$B6,$B7,$B8,$BA,$BC,$BE,$C0,$C2,$C4
         !byte $C8,$CA,$00
-
-snakebananasfx:
-        !byte $0E,$00,$08,$D0,$41,$CC,$C8,$C4,$C0,$BC,$B8,$B4,$B8,$BC,$C0,$C4
-        !byte $C8,$CC,$00
-
-snakecherriessfx:
-        !byte $0E,$00,$08,$C0,$41,$C0,$C4,$CC,$C8,$C8,$CC,$C4,$C0,$C8,$C0,$00
-
-snakestrawberrysfx:
-        !byte $0E,$00,$08,$AC,$41,$B0,$B4,$B7,$AC,$B0,$B4,$B7,$AC,$B0,$B4,$B7
-        !byte $AC,$B0,$B4,$B7,$00
-
-bombsfx:
-       !byte $0E,$EE,$08,$AF,$41,$DF,$81,$AD,$41,$AB,$A9,$CF,$81,$CF,$CF,$CF
-       !byte $00
-
-levelupsfx:
-        !byte $0E,$EE,$08,$B0,$41,$B1,$B2,$B3,$B4,$B5,$B6,$B7,$B8,$B9,$BA,$B9
-        !byte $BA,$BB,$BC,$BD,$B0,$B1,$B2,$B3,$B4,$B5,$B6,$B7,$B8,$B9,$BA,$B9
-        !byte $BA,$BB,$BC,$BD,$B0,$B1,$B2,$B3,$B4,$B5,$B6,$B7,$B8,$B9,$BA,$B9
-        !byte $BA,$BB,$BC,$BD,$00
 

@@ -1,4 +1,5 @@
- 
+                       
+
 ;GAME CODE
       
 ;Call routine to stop existing interrupts/IRQs from
@@ -81,11 +82,8 @@ stopmapbuild    ;Map draw finished.
                 ;Draw mountain attribs
                 
                 ldx #$00
-paintmountains  ldy screen,x
-                lda mountainattribs,y
+paintmountains  lda #$0a
                 sta colour,x
-                ldy screen+$100,x
-                lda mountainattribs,y
                 sta colour+$100,x
                 inx
                 bne paintmountains
@@ -168,17 +166,14 @@ paintpanel      lda #$0d
         
                 
 ;Prepare in game IRQ raster interrupts          
-                ldx #$fb
-                txs
                 ldx #<gameirq1
                 ldy #>gameirq1
                 lda #$7f
-                stx $fffe
-                sty $ffff
+                stx $0314
+                sty $0315
                 sta $dc0d
-                sta $dd0d
-                 
-                lda #$00
+                
+                lda #$22
                 sta $d012
                 lda #$1b
                 sta $d011
@@ -189,8 +184,7 @@ paintpanel      lda #$0d
                 jsr musicinit
                 cli
                 jmp getreadymain
-                
-                !source "irq.asm"
+              
                 
 getreadymain
                 ;Enable all sprites
@@ -312,19 +306,21 @@ setsprcolour    lda #$01
                 
                 jmp gameloop
 
-; Kill of all IRQ interrupts that are currently playing also
+; Kill off all IRQ interrupts that are currently playing also
 ; make a short delay, in order to prevent sensitive fire
 ;button pressing
 
 killirqs        sei
-                ldx #$48
-                ldy #$ff
-                stx $fffe
-                sty $ffff
-                ldx #<nmi
-                ldy #>nmi
-                stx $fffa
-                sty $fffb
+                
+                ;lda #251
+                ;sta 808
+                lda #8
+                jsr $ffd2
+                ldx #$31
+                ldy #$ea
+                stx $0314
+                sty $0315
+                
                 lda #$00
                 sta $d011
                 sta $d019
@@ -372,23 +368,22 @@ delay2          iny
 
 gameloop         
                 jsr synctimer       ;Synchronize game timer
+                jsr expandmsb       ;Expand sprite X position and store to hardware
                 jsr scrollcontrol   ;Main game screen scrolling
-               
-              
-                jsr levelcontrolmain
-                jsr playercontrol   ;Player, joystick and sprite/background collision control
-                
-                jsr animbombs
-                jsr scrolllevup
-                  jsr expandmsb       ;Expand sprite X position and store to hardware
+                jsr gamecontrol
                 jmp gameloop
                 
+gamecontrol     jsr scrolllevup
+                jsr levelcontrolmain
+                jsr playercontrol   ;Player, joystick and sprite/background collision control
+                jsr animbombs
+                rts  
 
 ;Synchronize timer
 
-synctimer       ldy #0
-                sty rt
-                cpy rt
+synctimer       lda #0
+                sta rt
+                cmp rt
                 beq *-3 
                 
                 rts
@@ -459,31 +454,22 @@ exploop         lda objpos+1,x
 
                 
 ;Scroll controller
-scrollcontrol 
-                jsr parallax
+scrollcontrol  
+                jsr parallax1
+                jsr parallax2
                 jsr spawnlogic 
-                
                 rts
-parallax          jsr scrollmountains
                 
+            
+parallax1       jsr scrollmountains
                 jsr scrollrockstop
                 jsr scrollplantstop
-                
-                 jsr scrollmainscreen
+                rts
+parallax2                
+                jsr scrollmainscreen
                 jsr scrollplantsbottom
                 jsr scrollrocksbottom
-                
-               
-              
-              
                 rts
-              
-              
-                
-                
-skipmountainscroll
-               rts
-                
 ;Parallax scroll 1 - Scroll mountains.
 
 scrollmountains
@@ -494,7 +480,7 @@ scrollmountains
                 and #7
                 
                 sta d016table
-                bcs skipmountainscroll
+                bcs skiprockstop
                 
                 lda screen+(1*40)
                 sta rowtemp
@@ -509,18 +495,18 @@ scrollmountains
                 lda screen+(6*40)
                 sta rowtemp+5
                 
-                lda colour+(1*40)
-                sta colourtemp
-                lda colour+(2*40)
-                sta colourtemp+1
-                lda colour+(3*40)
-                sta colourtemp+2
-                lda colour+(4*40)
-                sta colourtemp+3
-                lda colour+(5*40)
-                sta colourtemp+4
-                lda colour+(6*40)
-                sta colourtemp+5
+      ;          lda colour+(1*40)
+      ;          sta colourtemp
+      ;          lda colour+(2*40)
+      ;          sta colourtemp+1
+      ;          lda colour+(3*40)
+      ;          sta colourtemp+2
+      ;          lda colour+(4*40)
+      ;          sta colourtemp+3
+      ;          lda colour+(5*40)
+      ;          sta colourtemp+4
+      ;          lda colour+(6*40)
+      ;          sta colourtemp+5
        
                 ldx #$00
 scrloop0        lda screen+(1*40)+1,x
@@ -543,28 +529,7 @@ scrloop1
                 inx
                 cpx #$27
                 bne scrloop1
-  
-                ldx #$00
-scrloop1a       lda colour+(1*40)+1,x
-                sta colour+(1*40),x
-                lda colour+(2*40)+1,x
-                sta colour+(2*40),x
-                lda colour+(3*40)+1,x
-                sta colour+(3*40),x
-                inx
-                cpx #$27
-                bne scrloop1a
-                ldx #$00
-scrloop1b                
-                lda colour+(4*40)+1,x
-                sta colour+(4*40),x
-                lda colour+(5*40)+1,x
-                sta colour+(5*40),x
-                lda colour+(6*40)+1,x
-                sta colour+(6*40),x
-                inx
-                cpx #$27
-                bne scrloop1b
+ 
                        
                 lda rowtemp
                 sta screen+(1*40)+39
@@ -579,18 +544,7 @@ scrloop1b
                 lda rowtemp+5
                 sta screen+(6*40)+39
                 
-                lda colourtemp
-                sta colour+(1*40)+39
-                lda colourtemp+1
-                sta colour+(2*40)+39
-                lda colourtemp+2
-                sta colour+(3*40)+39
-                lda colourtemp+3
-                sta colour+(4*40)+39
-                lda colourtemp+4
-                sta colour+(5*40)+39
-                lda colourtemp+5
-                sta colour+(6*40)+39
+ 
 skiprockstop                
                 rts
 
@@ -640,9 +594,9 @@ scrollplantstop
                sta rowtemp+9
            
                lda colour+(9*40)
-               sta colourtemp+6
+               sta colourtemp 
                lda colour+(10*40)
-               sta colourtemp+7
+               sta colourtemp+1
                
                ldx #$00
 scrloop3       lda screen+(9*40)+1,x
@@ -668,9 +622,9 @@ scrloop3b
                lda rowtemp+9
                sta screen+(10*40)+39
                
-               lda colourtemp+6
+               lda colourtemp 
                sta colour+(9*40)+39
-               lda colourtemp+7
+               lda colourtemp+1
                sta colour+(10*40)+39
                
 skipmainscroll               
@@ -798,9 +752,9 @@ scrollplantsbottom
               lda screen+(22*40)
               sta rowtemp+11
               lda colour+(21*40)
-              sta colourtemp+11
+              sta colourtemp+2
               lda colour+(22*40)
-              sta colourtemp+12
+              sta colourtemp+3
               ldx #$00
 scrloop5
               lda screen+(21*40)+1,x
@@ -824,9 +778,9 @@ scrloop5b
               sta screen+(21*40)+39
               lda rowtemp+11
               sta screen+(22*40)+39
-              lda colourtemp+11
+              lda colourtemp+2
               sta colour+(21*40)+39
-              lda colourtemp+12
+              lda colourtemp+3
               sta colour+(22*40)+39
 skiprocksbottom              
               rts
@@ -1102,7 +1056,8 @@ gamecomplete
                 jsr spriteanimation
                 jsr moveplayeroutofscene
                 jsr snakerange
-                jsr parallax
+                jsr parallax1
+                jsr parallax2
                 jmp gamecomplete
 
 ;Move the snake out of the game scenery.
@@ -1181,8 +1136,8 @@ makewdsprites   lda welldonespritetable,x
                 sta firebutton
 wdloop          jsr synctimer      
                 jsr expandmsb
-                jsr parallax
-                
+                jsr parallax1
+                jsr parallax2
                 lda $dc00
                 lsr
                 lsr
@@ -1269,12 +1224,13 @@ paintloop       lda #$0d
                 
 ;Player control (and animation)
 
-playercontrol  
-                jsr spriteanimation       ;Animate the main player
-                jsr joystickcontrol       ;call joystick control for the main player
-                jsr snakerange            ;set snake range for size visual position of the snake sprites
-                jmp spritetocharcollision ;Sprite to charset collision routine (scoring, death, etc).
+playercontrol   
                 
+                jsr joystickcontrol       ;call joystick control for the main player
+                jsr spriteanimation       ;Animate the main player
+                jsr snakerange            ;set snake range for size visual position of the snake sprites
+                jsr spritetocharcollision ;Sprite to charset collision routine (scoring, death, etc).
+                rts
 ;Player joystick control (up or down only)
 
 joystickcontrol
@@ -1369,10 +1325,25 @@ under
 ;Sprite to background collision detection
 
 spritetocharcollision
-
+ 
+                ;Fix all snake sprites to 
+                ;select which objects should collide
+                ;Head - Fruit
+                ;Full body - Bombs
+                
+                lda #<objpos
+                sta collxtest+1
+                jsr testcollider
+                lda #<objpos+2
+                sta collxtest+1
+                jsr testcollider
+                lda #<objpos+4
+                sta collxtest+1
+                
+testcollider                
                 lda objpos+1
                 sec
-colltesty       sbc #$32
+                sbc #$32
                 lsr
                 lsr
                 lsr
@@ -1383,9 +1354,9 @@ colltesty       sbc #$32
                 lda screenhi,y
                 sta screenhistore
                 
-                lda objpos 
+collxtest       lda objpos 
                 sec
-colltestx       sbc #$07
+                sbc #$07
                 lsr
                 lsr
                 tay
@@ -1393,7 +1364,7 @@ colltestx       sbc #$07
                 ldx #$03
                 sty selfmodi+1
                 
-bgcloop         jmp  checkobjectchars
+bgcloop         jmp checkobjectchars
 
 selfmodi         ldy #$00
                 lda screenlostore
@@ -1409,9 +1380,20 @@ skipmod         dex
 ;Check object characters to see whether or not they relate to fruit or bombs
    
 checkobjectchars 
-
-               ;Does the snake hit a large apple (Only read top left/right?
+                
+               ;Test 
+               lda collxtest+1
+               cmp #<objpos
+               bne notjustsnakehead
                lda (screenlostore),y
+               jmp collimain
+notjustsnakehead
+               lda (screenlostore),y
+               jmp snakefullcoll
+               
+               ;Does the snake hit a large apple (Only read top left/right?
+collimain               
+         
                cmp #apple1
                bne notlargeapple
                jmp appleeatenleft
@@ -1489,6 +1471,7 @@ notsmallstrawberry
                jmp strawberryeatenright
 notsmallstrawberry2
 
+snakefullcoll
                ;Does the snake hit a large bomb?
                cmp #bomb1
                bne nothitbomb
@@ -1589,12 +1572,18 @@ bombkillplayerright
               jsr removecharright
               
 ;Kill the snake
-killsnake
+killsnake    
+              ldx #0
+resetd016     lda #0
+              sta d016table,x
+              inx
+              cpx #6
+              bne resetd016
+              
               lda #<bombsfx
               ldy #>bombsfx
               ldx #14
               jsr sfxplay
-              
               jmp snakedestroyer
               
                
@@ -1836,7 +1825,7 @@ putstatuspanel  lda statuspanel,x
                 
 ;The main snake destroyer subroutine 
 
-snakedestroyer 
+snakedestroyer  
                 lda #0
                 sta explodeanimpointer
                 sta explodeanimdelay 
@@ -1887,18 +1876,29 @@ morphtodeadsnake
 issmalldeadsnake
                 lda smalldeadsnakehead
                 ldx smalldeadsnakebody
-                ldy smalldeadsnaketail
+                ldy #$af
                 sta $07f8
                 stx $07f9
                 sty $07fa
-                jmp gameover
+                jmp gameover1
                 
 islargedeadsnake
                 lda largedeadsnakehead
                 ldx largedeadsnakebody
-                ldy largedeadsnaketail 
+                ldy #$af
                 sta $07f8
                 stx $07f9
+                sty $07fa
+                
+;Short delay routine
+gameover1
+                 
+waitloop                
+                jsr synctimer
+                inc $60
+                lda $60
+                cmp #$60
+                bne waitloop
                 
 ;Game over routine
 
@@ -1913,6 +1913,10 @@ makegameoverspr lda gameoverspritetable,x
                 inx
                 cpx #6
                 bne makegameoverspr
+                lda #0
+                sta objpos+1
+                sta objpos+3
+                sta objpos+5
                 
 ;Now place game over sprites
 
@@ -1964,11 +1968,7 @@ spritesinus     ldx sinuspointer
                 sta objpos+14
                 inc sinuspointer
                 rts
-                
-
-
-                
-                
-                
+ 
+                !source "irq.asm"          
                 !source "pointers.asm"
-                    
+          

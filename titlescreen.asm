@@ -61,12 +61,8 @@ defaultcolour   lda #$0d
                 ldx #<tirq1
                 ldy #>tirq1
                 lda #$7f
-                stx $fffe
-                sty $ffff
-                ldx #<nmi
-                ldy #>nmi 
-                stx $fffa
-                sty $fffb
+                stx $0314
+                sty $0315
                 sta $dc0d
                 sta $dd0d
                 lda $dc0d
@@ -87,88 +83,70 @@ defaultcolour   lda #$0d
 
 ;Raster 1 - X Scroller                 
 
-tirq1           sta tstacka1+1
-                stx tstackx1+1
-                sty tstacky1+1
-                asl $d019
+tirq1           asl $d019
                 lda $dc0d
                 sta $dd0d
                 lda #$22
                 sta $d012
                 lda #$1b
+                
                 sta $d011
                 lda xpos
                 ora #$10
                 sta $d016
-                lda #$1e
-                sta $d018
+                
+                ldy #$1e
+                sty $d018
                 lda #$03
                 sta $dd00
                 ldx #<tirq2
                 ldy #>tirq2
-                stx $fffe
-                sty $ffff
-tstacka1        lda #0
-tstackx1        ldx #0
-tstacky1        ldy #0
-                rti
+                stx $0314
+                sty $0315
+                jmp $ea7e
                 
 ;Raster 2 - Logo bitmap                
 
-tirq2           sta tstacka2+1
-                stx tstackx2+1
-                sty tstacky2+1
-                asl $d019
+tirq2           asl $d019
                 lda #$82
                 sta $d012
+                
                 lda #$3b
+                ldx #$18
+                ldy #$18
                 sta $d011
-                lda #$18
-                sta $d016
-                lda #$18
-                sta $d018
+                stx $d016
+                sty $d018
                 lda #$00
                 sta $dd00
                 ldx #<tirq3
                 ldy #>tirq3
-                stx $fffe
-                sty $ffff
-tstacka2        lda #0
-tstackx2        ldx #0
-tstacky2        ldy #0
-                rti
-                
+                stx $0314
+                sty $0315
+tstacka2        jmp $ea7e
+
 ;Raster 3 - Still text 
 
-tirq3           sta tstacka3+1
-                stx tstackx3+1
-                sty tstacky3+1
-                asl $d019
-                lda #$ea
+tirq3           asl $d019
+                lda #$e8
                 sta $d012
-                ldx #$02
-                dex
-                bne *-1
-                lda #$1b
-                sta $d011
-                lda #$18
-                sta $d016
-                lda #$1e
-                sta $d018
                 lda #$03
+                ldx #$1b
+                ldy #$18
                 sta $dd00
-                lda #1
-                sta rt
+                stx $d011
+                sty $d016
+                lda #$1e
+                ldx #$01
+                sta $d018
+                stx rt
                 jsr musicplayer
                 
                 ldx #<tirq1
                 ldy #>tirq1
-                stx $fffe
-                sty $ffff
-tstacka3        lda #0
-tstackx3        ldx #0
-tstacky3        ldy #0
-                rti
+                stx $0314
+                sty $0315
+                jmp $ea7e
 
 ;Main title screen loop                
                 

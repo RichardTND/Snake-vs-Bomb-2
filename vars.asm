@@ -1,5 +1,6 @@
 
 ;VARIABLES/LABELS
+rt = $cfff 
 
 titlemusic = 0
 gamemusic = 1
@@ -16,11 +17,16 @@ sfxplay = $8006
 split1 = $22 ;Paralax layer 5 - The rocks (bottom)
 split2 = $3a ;Status panel
 split3 = $6a ;Mountains
-split4 = $79 ;Parallax layer 1 - The rocks (top)
+split4 = $7a ;Parallax layer 1 - The rocks (top)
 split5 = $8a ;Parallax layer 2 - the plants (top)
 split6 = $da ;Main game scroll
 split7 = $ea;Paralax layer 4 - The plants (bottom)
 split8 = $f8 ;Copy of split 7
+
+;Scroll control
+
+rowtemp = $80
+colourtemp = $90
 
 ;Object spawn row/column position
 
@@ -147,7 +153,9 @@ name8 = $a707
 name9 = $a72f
 name10 = $a757
 
-;hiscorestart = $a6ad  ;Target position for first digit for hi score
+hiscorestart = $a6a0  ;Target position for first digit for hi score
+hiscoreend = $a768
+
 hiscore1 = $a6ad
 hiscore2 = $a6d5
 hiscore3 = $a6fd

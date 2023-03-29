@@ -128,7 +128,7 @@ putname        lda name,y
                 sta ($ac),y
                 dey
                 bpl putname
-              ;  jsr savehiscores
+                jsr savehiscores
 nohiscore:
                 jmp titlescreen
                 
@@ -178,8 +178,8 @@ clearname       lda #$20
                 ldx #<hiirq
                 ldy #>hiirq
                 lda #$7f
-                stx $fffe
-                sty $ffff
+                stx $0314
+                sty $0315
                 sta $dc0d
                 sta $dd0d
                 lda $dc0d
@@ -347,10 +347,7 @@ skipcleanup     inx
                 
 ;IRQ raster interrupt for hi score entry
 
-hiirq           sta hstacka+1                
-                stx hstackx+1
-                sty hstacky+1
-                asl $d019
+hiirq           asl $d019
                 lda $dc0d
                 sta $dd0d
                 lda #$f8
@@ -358,10 +355,7 @@ hiirq           sta hstacka+1
                 lda #1
                 sta rt 
                 jsr musicplayer
-hstacka         lda #0
-hstackx         ldx #0
-hstacky         ldy #0
-                rti
+                jmp $ea7e
                 
 ;Hi score pointers
 

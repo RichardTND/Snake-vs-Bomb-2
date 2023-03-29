@@ -33,8 +33,8 @@ drawend           lda endscreentext,x
                   ldx #<singleirq
                   ldy #>singleirq
                   lda #$7f
-                  stx $fffe
-                  sty $ffff
+                  stx $0314
+                  sty $0315
                   sta $dc0d
                   sta $dd0d
                   lda #$22
@@ -60,9 +60,7 @@ endloop           lda $dc00
                   bmi endloop
                   bvc endloop
                   jmp checkhiscore
-singleirq         sta stacka+1                  
-                  stx stackx+1
-                  sty stacky+1
+singleirq          
                   asl $d019
                   lda $dc0d
                   sta $dd0d
@@ -72,8 +70,5 @@ singleirq         sta stacka+1
                   sta rt
                   jsr musicplayer
                   jsr titleanimbombs
-stacka            lda #0
-stackx            ldx #0
-stacky            ldy #0
-                  rti
+stacka            jmp $ea7e
                   
