@@ -1,12 +1,14 @@
 
 ;VARIABLES/LABELS
-rt = $cfff 
 
 titlemusic = 0
 gamemusic = 1
 getreadymusic = 2
 gameovermusic = 3
 gamecompletemusic = 4
+deathmusic = 5
+welldonemusic = 6
+hiscoremusic = 7
 
 screen = $0400 ;Assigned screen RAM 
 colour = $d800 ;Assigned colour RAM
@@ -19,10 +21,9 @@ split2 = $3a ;Status panel
 split3 = $6a ;Mountains
 split4 = $7a ;Parallax layer 1 - The rocks (top)
 split5 = $8a ;Parallax layer 2 - the plants (top)
-split6 = $da ;Main game scroll
+split6 = $d9 ;Main game scroll
 split7 = $ea;Paralax layer 4 - The plants (bottom)
-split8 = $f8 ;Copy of split 7
-
+split8 = $fa ;Copy of split 7 
 ;Scroll control
 
 rowtemp = $80
@@ -142,30 +143,35 @@ namelen = 9  ;No. of digits used for name
 listlen = 10 ;No. of hi scores and names on list
 
 ;namestart = $a6a3     ;Target position for first character for name
-name1 = $a6a3
-name2 = $a6cb
-name3 = $a6f3
-name4 = $a71b
-name5 = $a743
-name6 = $a6b7
-name7 = $a6df
-name8 = $a707
-name9 = $a72f
-name10 = $a757
+
+name1 = $a6cb
+name2 = $a6f3
+name3 = $a71b
+name4 = $a743
+name5 = $a76b
+name6 = $a6df
+name7 = $a707
+name8 = $a72f
+name9 = $a757
+name10 = $a77f
 
 hiscorestart = $a6a0  ;Target position for first digit for hi score
 hiscoreend = $a768
 
-hiscore1 = $a6ad
-hiscore2 = $a6d5
-hiscore3 = $a6fd
-hiscore4 = $a725
-hiscore5 = $a74d
-hiscore6 = $a6c1
-hiscore7 = $a6e9
-hiscore8 = $a711
-hiscore9 = $a739
-hiscore10 = $a761
+hiscoresavestart = $a6c9
+hiscoresaveend = $a78f
+
+hiscore1 = $a6d5
+hiscore2 = $a6fd
+hiscore3 = $a725
+hiscore4 = $a74d
+hiscore5 = $a775
+hiscore6 = $a6e9
+hiscore7 = $a711
+hiscore8 = $a739
+hiscore9 = $a761
+hiscore10 = $a789
+
 
 namescreenpos = $0707 ;Screen position in which the name should be displayed 
 

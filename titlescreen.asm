@@ -8,14 +8,7 @@ titlescreen     jsr killirqs
 ;Setup graphics colour mode
                 
                 ;Initialise scroll text
-                ldx #$00
-clearscreent    lda #$20
-                sta $0400,x
-                sta $0500,x
-                sta $0600,x
-                sta $06e8,x
-                inx
-                bne clearscreent
+               
                 
                 lda #<scrolltext
                 sta messread+1
@@ -25,10 +18,15 @@ clearscreent    lda #$20
                 lda #0
                 sta $d020
                 sta $d021
+                sta $d011
                 lda #$02
                 sta $d022
                 lda #$07
                 sta $d023
+                lda #$1e
+                sta $d018
+                lda #$18
+                sta $d016
                 
 ;Fetch colour RAM data and copy to screen video RAM
 
@@ -89,7 +87,6 @@ tirq1           asl $d019
                 lda #$22
                 sta $d012
                 lda #$1b
-                
                 sta $d011
                 lda xpos
                 ora #$10

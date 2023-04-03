@@ -15,8 +15,11 @@ nmhi  !byte >name1,>name2,>name3,>name4,>name5
       
 name  !byte $20,$20,$20,$20,$20,$20,$20,$20,$20
 nameend
-
-
+!ct scr
+cheatcode
+      !text "adderbomb"
+cheattext !text "cheat mode active ...   "
+cheattextend
 !align $ff,$00
 
 checkhiscore    jsr killirqs ;Switch off all IRQs 
@@ -128,11 +131,35 @@ putname        lda name,y
                 sta ($ac),y
                 dey
                 bpl putname
+                
+                jsr testforcheat
+                
                 jsr savehiscores
 nohiscore:
                 jmp titlescreen
                 
-                        
+
+                ;Test for cheat mode (invincibility)
+testforcheat                
+                ldx #$00
+checkcheat      lda name,x
+                cmp cheatcode,x
+                bne nocheatfound
+                inx
+                cpx #$09
+                bne checkcheat
+                ldx #$00
+setcheattoscroll
+                lda cheattext,x
+                sta scrolltext,x
+                inx
+                cpx #cheattextend-cheattext
+                bne setcheattoscroll
+                
+                lda #1
+                sta cheatmodeon
+                 
+nocheatfound    rts                                  
             
 nameentry
                 ldx #$00
@@ -194,7 +221,7 @@ clearname       lda #$20
                 
                 ;Initialize music for hi score
                 
-                lda #gamecompletemusic
+                lda #hiscoremusic
                 jsr musicinit
                 cli
                 

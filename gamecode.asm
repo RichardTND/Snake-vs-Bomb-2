@@ -7,14 +7,7 @@
 
 gamestart       jsr killirqs
                
-                ldx #$00
-clearscreennow  lda #$20
-                sta screen,x
-                sta screen+$100,x
-                sta screen+$200,x
-                sta screen+$2e8,x
-                inx
-                bne clearscreennow
+                
                 
 ;Grab all graphics map data and place those onto the screen.
 ;Panel = 1 row (leave blank), Mountains = 6 rows, Canyon = 18 rows
@@ -164,7 +157,15 @@ paintpanel      lda #$0d
                 sta spriteanimpointer ;Default animation speed and pointer
                 sta spriteanimdelay
         
+                ldx #$00
+setd016table                
+                lda #0
+                sta d016table,x
+                inx
+                cpx #6
+                bne setd016table
                 
+               
 ;Prepare in game IRQ raster interrupts          
                 ldx #<gameirq1
                 ldy #>gameirq1
@@ -172,8 +173,9 @@ paintpanel      lda #$0d
                 stx $0314
                 sty $0315
                 sta $dc0d
+                sta $dd0d
                 
-                lda #$22
+                lda #split1
                 sta $d012
                 lda #$1b
                 sta $d011
@@ -251,9 +253,7 @@ getreadyloop    jsr synctimer
                 bvc getreadyloop
                 lda #0
                 sta firebutton
-                
-setupmaingame                
-                
+       
                 ;Setup the sprite position table to object position
                 
                 ldx #$00
@@ -314,12 +314,8 @@ killirqs        sei
                 
                 ;lda #251
                 ;sta 808
-                lda #8
-                jsr $ffd2
-                ldx #$31
-                ldy #$ea
-                stx $0314
-                sty $0315
+               
+                
                 
                 lda #$00
                 sta $d011
@@ -331,8 +327,23 @@ killirqs        sei
                 lda #$81
                 sta $dc0d
                 sta $dd0d
-               
+                ldx #$31
+                ldy #$ea
+                stx $0314
+                sty $0315
                 
+                 ldx #$00
+clearscreent    lda #$00
+                sta $0400,x
+                sta $0500,x
+                sta $0600,x
+                sta $06e8,x
+                sta $d800,x
+                sta $d900,x
+                sta $da00,x
+                sta $dae8,x
+                inx
+                bne clearscreent
                 
                 ;Silence the SID chip
                 ldx #$00
@@ -354,29 +365,55 @@ zerosprposy     lda #$00
                 
                 ;Pointless, but useful delay routine
                 
-                ldx #$00
+;                ldx #$00
 delay1          ldy #$00
 delay2          iny
                 bne delay2
                 inx
                 bne delay1
+                rts
+                !byte $00
+                !source "irq.asm"                
                 
                 ;End of IRQ kill routine
-                rts
+                 
                 
 ;Main game loop
 
-gameloop         
-                jsr synctimer       ;Synchronize game timer
-                jsr expandmsb       ;Expand sprite X position and store to hardware
+gameloop        ;Check for game pause
+                lda #4
+                bit $dc01
+                bne continueplay
+                
+gamepaused                
+                lda #16
+                bit $dc01
+                bne checkfireunpause
+                jmp continueplay
+checkfireunpause 
+                lda #16
+                bit $dc00
+                bne checkabort
+                jmp continueplay
+checkabort      lda #2
+                bit $dc01
+                bne gamepaused
+                jmp titlescreen
+
+continueplay    jsr synctimer
+                jsr expandmsb       ;Expand sprite X position and store to hardwarey
                 jsr scrollcontrol   ;Main game screen scrolling
+               
+                
+               
                 jsr gamecontrol
                 jmp gameloop
                 
-gamecontrol     jsr scrolllevup
+gamecontrol     
                 jsr levelcontrolmain
                 jsr playercontrol   ;Player, joystick and sprite/background collision control
                 jsr animbombs
+                jsr scrolllevup
                 rts  
 
 ;Synchronize timer
@@ -495,19 +532,6 @@ scrollmountains
                 lda screen+(6*40)
                 sta rowtemp+5
                 
-      ;          lda colour+(1*40)
-      ;          sta colourtemp
-      ;          lda colour+(2*40)
-      ;          sta colourtemp+1
-      ;          lda colour+(3*40)
-      ;          sta colourtemp+2
-      ;          lda colour+(4*40)
-      ;          sta colourtemp+3
-      ;          lda colour+(5*40)
-      ;          sta colourtemp+4
-      ;          lda colour+(6*40)
-      ;          sta colourtemp+5
-       
                 ldx #$00
 scrloop0        lda screen+(1*40)+1,x
                 sta screen+(1*40),x
@@ -593,10 +617,10 @@ scrollplantstop
                lda screen+(10*40)
                sta rowtemp+9
            
-               lda colour+(9*40)
-               sta colourtemp 
-               lda colour+(10*40)
-               sta colourtemp+1
+            ;   lda colour+(9*40)
+            ;   sta colourtemp 
+            ;   lda colour+(10*40)
+            ;   sta colourtemp+1
                
                ldx #$00
 scrloop3       lda screen+(9*40)+1,x
@@ -609,23 +633,23 @@ scrloop3       lda screen+(9*40)+1,x
                
                ldx #$00
 scrloop3b                  
-               lda colour+(9*40)+1,x
-               sta colour+(9*40),x
-               lda colour+(10*40)+1,x
-               sta colour+(10*40),x
-               inx
-               cpx #$27
-               bne scrloop3b
+            ;   lda colour+(9*40)+1,x
+            ;   sta colour+(9*40),x
+            ;   lda colour+(10*40)+1,x
+            ;   sta colour+(10*40),x
+            ;   inx
+            ;   cpx #$27
+            ;   bne scrloop3b
                
                lda rowtemp+8
                sta screen+(9*40)+39
                lda rowtemp+9
                sta screen+(10*40)+39
                
-               lda colourtemp 
-               sta colour+(9*40)+39
-               lda colourtemp+1
-               sta colour+(10*40)+39
+            ;   lda colourtemp 
+            ;   sta colour+(9*40)+39
+           ;    lda colourtemp+1
+           ;    sta colour+(10*40)+39
                
 skipmainscroll               
                rts
@@ -729,9 +753,6 @@ zeroloop      lda #lane
               inx
               cpx #$03
               bne zeroloop
-              rts
-                
-              
               
 skipplantsbottom              
               rts
@@ -751,10 +772,10 @@ scrollplantsbottom
               sta rowtemp+10
               lda screen+(22*40)
               sta rowtemp+11
-              lda colour+(21*40)
-              sta colourtemp+2
-              lda colour+(22*40)
-              sta colourtemp+3
+            ;  lda colour+(21*40)
+            ;  sta colourtemp+2
+            ;  lda colour+(22*40)
+            ;  sta colourtemp+3
               ldx #$00
 scrloop5
               lda screen+(21*40)+1,x
@@ -764,24 +785,24 @@ scrloop5
               inx
               cpx #$27
               bne scrloop5
-              ldx #$00
+           ;   ldx #$00
 scrloop5b              
-              lda colour+(21*40)+1,x
-              sta colour+(21*40),x
-              lda colour+(22*40)+1,x
-              sta colour+(22*40),x
-              inx
-              cpx #$27
-              bne scrloop5b
+           ;   lda colour+(21*40)+1,x
+           ;   sta colour+(21*40),x
+           ;   lda colour+(22*40)+1,x
+           ;   sta colour+(22*40),x
+           ;   inx
+           ;   cpx #$27
+           ;   bne scrloop5b
               
               lda rowtemp+10
               sta screen+(21*40)+39
               lda rowtemp+11
               sta screen+(22*40)+39
-              lda colourtemp+2
-              sta colour+(21*40)+39
-              lda colourtemp+3
-              sta colour+(22*40)+39
+            ;  lda colourtemp+2
+            ;  sta colour+(21*40)+39
+            ;  lda colourtemp+3
+            ;  sta colour+(22*40)+39
 skiprocksbottom              
               rts
               
@@ -964,9 +985,7 @@ randomizer      lda rand+1
 ;Main game level control
 
 levelcontrolmain
-
-
-               
+  
                 lda leveltime
                 cmp leveltimeexpiry ;milliseconds
                 beq nexttime
@@ -1084,7 +1103,7 @@ notexitend      sta objpos+4
 
 ;Enable all sprites
 allspritesout               
-                lda #gamecompletemusic
+                lda #gameovermusic
                 jsr musicinit
                 
                 lda #$00
@@ -1100,6 +1119,8 @@ allspritesout
                 sta firebutton 
                 
              
+                lda #welldonemusic
+                jsr musicinit
                 
                 ldx #$00
 makewdsprites   lda welldonespritetable,x
@@ -1230,6 +1251,7 @@ playercontrol
                 jsr spriteanimation       ;Animate the main player
                 jsr snakerange            ;set snake range for size visual position of the snake sprites
                 jsr spritetocharcollision ;Sprite to charset collision routine (scoring, death, etc).
+                
                 rts
 ;Player joystick control (up or down only)
 
@@ -1471,8 +1493,13 @@ notsmallstrawberry
                jmp strawberryeatenright
 notsmallstrawberry2
 
-snakefullcoll
+snakefullcoll  lda cheatmodeon
+               cmp #1
+               bne checkbombscollision
+               jmp selfmodi
+checkbombscollision               
                ;Does the snake hit a large bomb?
+               lda (screenlostore),y
                cmp #bomb1
                bne nothitbomb
                jmp bombkillplayerleft
@@ -1579,11 +1606,17 @@ resetd016     lda #0
               inx
               cpx #6
               bne resetd016
+              lda #0
+              sta expcoldelay
+              sta expcoltimer
               
+              lda #deathmusic
+              jsr musicinit
               lda #<bombsfx
               ldy #>bombsfx
               ldx #14
               jsr sfxplay
+              
               jmp snakedestroyer
               
                
@@ -1644,7 +1677,7 @@ appleto100ptsleft
               rts
               
 appleto100ptsright
-              inc $d020
+               
               lda #points100b
               sta (screenlostore),y
               dey
@@ -1833,39 +1866,25 @@ snakedestroyer
                 sta $07f8
                 sta $07f9
                 sta $07fa
-                
-explosionloop   jsr synctimer
-                jsr expandmsb
-                jsr animexplosion
-                jmp explosionloop
-animexplosion            
-                lda explodeanimdelay
-                cmp #3
-                beq explodeanimok
-                inc explodeanimdelay
-                rts
-explodeanimok   lda #0
-                sta explodeanimdelay
-                ldx explodeanimpointer
-                lda explosionframe,x
-                sta $07f8
-                sta $07f9
-                sta $07fa
-                inx
-                cpx #7
-                beq morphtodeadsnake
-                inc explodeanimpointer
-                rts
-                
-;Explosion has finished, morph explosion sprites to dead snake                
-
-morphtodeadsnake
-                ldx #0
-                stx explodeanimpointer
+                lda objpos
+                sec
+                sbc #4
+                sta objpos+6
+                lda objpos+2
+                sbc #4
+                sta objpos+8
+                lda objpos+1
+                sta objpos+7
+                lda objpos+3
+                sta objpos+9
+                lda objpos+5
+                sta objpos+11
                 lda #1
-                sta $d027
-                sta $d028
-                sta $d029
+                sta $d02a
+                sta $d02b
+                sta $d02c
+               
+                 
                 
                 ;Check range again
                 
@@ -1877,32 +1896,71 @@ issmalldeadsnake
                 lda smalldeadsnakehead
                 ldx smalldeadsnakebody
                 ldy #$af
-                sta $07f8
-                stx $07f9
-                sty $07fa
-                jmp gameover1
+                sta $07fb
+                stx $07fc
+                sty $07fd
+                jmp continuedeath
                 
 islargedeadsnake
                 lda largedeadsnakehead
                 ldx largedeadsnakebody
                 ldy #$af
+                sta $07fb
+                stx $07fc
+                sty $07fd
+continuedeath               
+                
+explosionloop   jsr synctimer
+                jsr expandmsb
+                jsr animexplosion
+                jsr animexplodecol
+                jmp explosionloop
+animexplosion            
+                lda explodeanimdelay
+                cmp #3
+                beq explodeanimok
+                inc explodeanimdelay
+                rts
+explodeanimok   lda #0
+                sta explodeanimdelay
+               
+                ldx explodeanimpointer
+                lda explosionframe,x
                 sta $07f8
-                stx $07f9
-                sty $07fa
+                sta $07f9
+                sta $07fa
+                inx
+                cpx #explosionframeend-explosionframe
+                beq morphtodeadsnake
+                inc explodeanimpointer
+                rts
                 
-;Short delay routine
-gameover1
-                 
-waitloop                
-                jsr synctimer
-                inc $60
-                lda $60
-                cmp #$60
-                bne waitloop
+animexplodecol  lda expcoldelay
+                cmp #1
+                beq expscene
+                inc expcoldelay
+                rts
+expscene        lda #0
+                sta expcoldelay
+                ldx expcoltimer
+                lda expcoltable,x
+                sta $d021
+                inx
+                cpx #12
+                beq setasblack
+                inc expcoltimer
+                rts
+setasblack      ldx #11
+                stx expcoltimer
+                rts
                 
-;Game over routine
+;Explosion has finished, morph explosion sprites to dead snake                
 
-gameover        lda #gameovermusic
+morphtodeadsnake
+                ldx #0
+                stx explodeanimpointer
+                
+                lda #gameovermusic
                 jsr musicinit
                 
                 ldx #0
@@ -1968,7 +2026,8 @@ spritesinus     ldx sinuspointer
                 sta objpos+14
                 inc sinuspointer
                 rts
- 
-                !source "irq.asm"          
+                   
+               
                 !source "pointers.asm"
+                    
           

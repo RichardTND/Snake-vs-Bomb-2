@@ -8,7 +8,7 @@ gameirq1
                 lda $dc0d
                 sta $dd0d
                
-                
+               
                 lda #split1
                 sta $d012
                 lda #$1c
@@ -23,18 +23,24 @@ gameirq1
                 lda #0
                 sta $d020
 } else {
-                lda #0
-                sta $d020
+              
+                nop
+                nop
+                nop
+                nop
+                nop
   
 }  
              
               
-               
+             
                 ldx #<gameirq2
                 ldy #>gameirq2
                 stx $0314
                 sty $0315
-               
+                   lda #1
+                sta rt
+                jsr musicplayer
                 jmp $ea7e
                 
 ;IRQ 2 - Score panel raster
@@ -60,8 +66,12 @@ gameirq2        inc $d019
                 sta $d020
 } else {
                 
-                lda #0
-                bit $d020
+              
+                nop
+                nop
+                nop
+                nop
+                nop
   }  
 
                 lda #$09
@@ -93,8 +103,12 @@ gameirq3        inc $d019
                 lda #3
                 sta $d020
 } else {
-                lda #0
-                bit $d020
+              
+                nop
+                nop
+                nop
+                nop
+                nop
   }  
 
                 lda #$07
@@ -113,7 +127,8 @@ gameirq3        inc $d019
 gameirq4        inc $d019
                 lda #split4
                 sta $d012
-
+                lda #$07
+                sta $d023
                 nop
                 nop
                 nop
@@ -130,16 +145,18 @@ gameirq4        inc $d019
                 lda #4
                 sta $d020
 } else {
-                lda #0
-                bit $d020
-  
+              
+                nop
+                nop
+                nop
+                nop
+              
 }  
                
                 lda #$02
                 
                 sta $d022
-                lda #$07
-                sta $d023
+               
                 ldx #<gameirq5
                 ldy #>gameirq5
                 stx $0314
@@ -165,15 +182,19 @@ gameirq5        inc $d019
                 lda #5
                 sta $d020
 } else {
-                lda #0
-                bit $d020
+               
+                nop
+                nop
+                nop
+                nop
+                nop
   
 }  
 
                 lda #$02
                 sta $d022
                 lda #$07
-                sta $d023
+                sta $d023 
                
                 ldx #<gameirq6
                 ldy #>gameirq6
@@ -203,8 +224,12 @@ gameirq6        inc $d019
                 lda #6
                 sta $d020
 } else {
-                lda #0
-                bit $d020
+               
+                nop
+                nop
+                nop
+                nop
+                nop
 }  
                 
                 ldx #<gameirq7
@@ -235,8 +260,12 @@ gameirq7
                 lda #7
                 sta $d020
 } else {
-                lda #0
-                bit $d020
+                
+                nop
+                nop
+                nop
+                nop
+                nop
   
 }  
                  
@@ -272,18 +301,22 @@ gameirq8
                 nop
                 nop
                 nop
-                lda #0
-                sta $d020
+                nop
+                nop
+                nop
+                nop
+                nop
   
 }   
                
              
+                
+                
                 ldx #<gameirq1
                 ldy #>gameirq1
                 stx $0314
                 sty $0315
-             
-                lda #1
-                sta rt
-                jsr musicplayer
+                
+               
                 jmp $ea7e
+                

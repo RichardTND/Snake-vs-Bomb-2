@@ -1,13 +1,16 @@
 ;DISK ACCESS
 !ct scr
 dname !text "S:" ;Scratch/overwrite filename
-fname !text "-HALL OF FAME-"
+fname !text "-HALL OF FAME!-"
 fnamelen = *-fname
 dnamelen = *-dname
 
 ;Call subroutine for saving hi scores
 
 savehiscores
+        lda cheatmodeon
+        cmp #1
+        beq skiphiscoresaver
         jsr killirqs
         jsr savefile
 skiphiscoresaver
@@ -60,12 +63,12 @@ savefile
         ldy #>fname
         jsr $ffbd
         lda #$fb
-        ldx #<hiscorestart
-        ldy #>hiscorestart
+        ldx #<hiscoresavestart
+        ldy #>hiscoresavestart
         stx $fb
         sty $fc
-        ldx #<hiscoreend
-        ldy #>hiscoreend
+        ldx #<hiscoresaveend
+        ldy #>hiscoresaveend
         jsr $ffd8
 skipsave
         rts
@@ -83,7 +86,7 @@ loadfile
         jsr resetdevice
         
         lda #fnamelen
-        ldx  #<fname
+        ldx #<fname
         ldy #>fname
         jsr $ffbd
         lda #$00
