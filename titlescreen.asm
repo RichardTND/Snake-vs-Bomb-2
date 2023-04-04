@@ -8,7 +8,7 @@ titlescreen     jsr killirqs
 ;Setup graphics colour mode
                 
                 ;Initialise scroll text
-               
+                jsr randomizer
                 
                 lda #<scrolltext
                 sta messread+1

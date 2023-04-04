@@ -1,0 +1,42 @@
+SNAKE VS BOMB 2 
+
+LOADING INSTRUCTIONS (If not running disk or tape image) 
+ 
+Disk: 
+Insert your disk into your disk drive and then type in LOAD ”*”,8. Then type in RUN. The program will then start.  
+ 
+Please also remember that your disk must remain inserted in your disk drive if you want hi-score saver, otherwise ensure you take out your disk and switch off the device before running the program after loading has finished. 
+
+Tape: 
+Insert your tape into your tape deck. Fully rewind the cassette to the start. Press SHIFT and RUN STOP and wait for your program to load. The game uses a fast loader which should not take too long to load.  
+ 
+C128 users, use GO64 to go into C64 mode. 
+ 
+HOW TO PLAY 
+ 
+Snake vs Bomb 2 is for 1 player only and requires a Joystick plugged into port 2. 
+
+CONTROL will pause the game 
+LEFT ARROW will abort the game (paused) and return to the front end. 
+In pause mode, SPACEBAR or FIREBUTTON will resume play. 
+ 
+Your task is to guide your snake safely along a road across a Canyon. You can only move the snake UP or DOWN. While travelling along the long straight road, admiring the scenery. During your very long journey, you will encounter scrumptious fruit that has been dropped on the road. However, there is also bad news. Bombs are also dropped on the road.  The snake can eat the fruit, but if any part of the snake hits a bomb, the game is lost. 
+ 
+At the top of the screen, you will see a green snake. Each part of the snake in the status panel will turn from green to gold. This indicates how far you have travelled. After the tongue of the snake is yellow. You will move onto the next level, where more fruit and bombs will appear on the road.  
+
+There are eight levels in total, which will make the game become more frantic. Can you help your snake survive the treacherous journey alongside the Canyon and reach freedom?  
+ 
+There is only one way to find out, play the game  
+ 
+Programming, game title font, sound effects and music by RICHARD BAYLISS 
+Graphics, logo and loading bitmap by HUGUES (AX!S) POISSEROUX 
+Tape Loader System by MARTIN PIPER, modified by RICHARD BAYLISS 
+
+(C)2023 The New Dimension 
+Written and released specially for the Retro Programmers Inside and Phaze101 Snake Game Jam (https://itch.io/jam/retro-snake-game-jam)
+
+This production is non-commercial software. You are welcome to copy and share this game (or parts of it) providing that it is not being sold in any physical or digital form without written permission from the game author.  
+ 
+ 
+
+ 

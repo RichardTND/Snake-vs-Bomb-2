@@ -108,6 +108,11 @@ paint           ldy screen+(7*40),x
                 ldx #$00
 zeroscore       lda #$30
                 sta score,x
+                lda #$00
+                sta score1,x
+                sta score2,x
+                sta carry,x
+                sta result,x
                 inx
                 cpx #$06
                 bne zeroscore
@@ -167,6 +172,8 @@ setd016table
                 
                
 ;Prepare in game IRQ raster interrupts          
+                ldx #$fb
+                txs
                 ldx #<gameirq1
                 ldy #>gameirq1
                 lda #$7f
@@ -1353,17 +1360,25 @@ spritetocharcollision
                 ;Head - Fruit
                 ;Full body - Bombs
                 
-                lda #<objpos
+                lda #<sprite00x
                 sta collxtest+1
+                lda #<sprite00y
+                sta collytest+1
                 jsr testcollider
-                lda #<objpos+2
+                lda #<sprite01x
                 sta collxtest+1
+                lda #<sprite01y
+                sta collytest+1
                 jsr testcollider
-                lda #<objpos+4
+                lda #<sprite02x
                 sta collxtest+1
+                lda #<sprite03y
+                sta collytest+1
+                
+                
                 
 testcollider                
-                lda objpos+1
+collytest       lda objpos+1
                 sec
                 sbc #$32
                 lsr
@@ -1526,7 +1541,8 @@ nothitsmallbomb2
 appleeatenleft
                jsr appleto100ptsleft
                jsr score100
-               jmp playapplesfx
+               jsr playapplesfx
+               rts
                
 appleeatenright
                jsr appleto100ptsright
@@ -1543,7 +1559,8 @@ playapplesfx   lda #<snakeapplessfx
 bananaeatenleft
               jsr bananato200ptsleft
               jsr score200
-              jmp playbananasfx
+              jsr playbananasfx
+              rts
 bananaeatenright
               jsr bananato200ptsright
               jsr score200
@@ -1560,7 +1577,8 @@ playbananasfx
 cherrieseatenleft
               jsr cherriesto300ptsleft
               jsr score300
-              jmp playcherriessfx
+              jsr playcherriessfx
+              rts
 cherrieseatenright              
               jsr cherriesto300ptsright
               jsr score300
@@ -1577,7 +1595,8 @@ playcherriessfx
 strawberryeatenleft
               jsr strawberryto500ptsleft
               jsr score500
-              jmp playstrawberrysfx
+              jsr playstrawberrysfx
+              rts
 strawberryeatenright
               jsr strawberryto500ptsright
               jsr score500
@@ -1807,42 +1826,81 @@ strawberryto500ptsright
                
 ;Add score values according to fruit eaten 
 
-score500      jsr score100points
-              jsr score100points
-score300      jsr score100points
-score200      jsr score100points
-score100      jmp score100points
-
+score500      lda #5
+              sta vblank
+              jmp scorepoints
+              
+score300      lda #3
+              sta vblank
+              jmp scorepoints
+              
+score200      lda #2
+              sta vblank
+              jmp scorepoints
+              
+score100      lda #1
+              sta vblank
+              jmp scorepoints
+             
 
                
 ;The player scores points for eating fruit 
                
-score100points                
-              inc score+3
-              ldx #3
-scoreloop     lda score,x
-              cmp #$3a
-              bne scoreok
-              lda #$30
+scorepoints
+              lda vblank
+              sta score2+3
+              ldx #$05
+shiftscore    
+              lda score,x
+              sec
+              sbc #$30
+              sta score1,x
+              dex 
+              bpl shiftscore
+              ldx #$05
+              lda #$00
+scoreloop1    sta carry,x
+              dex
+              bpl scoreloop1
+              
+              ldx #$05
+scoreloop2    lda score1,x
+              clc
+              adc score2,x
+              adc carry,x
+              and #$0f
+              cmp #$0a
+              bcc nocarry
+              inc carry-1,x
+              sec
+              sbc #$0a
+nocarry       ora #$30
+              sta result,x
+              dex
+              bpl scoreloop2
+              ldx #5
+scoreloop3    lda result,x
+              
               sta score,x
-              inc score-1,x
-scoreok       dex
-              bne scoreloop
+              dex
+              bpl scoreloop3
               jsr maskscorepanel
-              rts  
+              rts
+              
+         rts  
               
 ;Award 1000 points for level completion              
 award1000points
               inc score+2
               ldx #2
-scoreloop2    lda score,x
+scoreloop4    lda score,x
               cmp #$3a
               bne scoreok2
               lda #$30
               sta score,x
               inc score-1,x
-scoreok2       dex
-              bne scoreloop2
+scoreok2      dex
+              bne scoreloop4
               jsr maskscorepanel
               rts
             
@@ -1962,7 +2020,8 @@ morphtodeadsnake
                 
                 lda #gameovermusic
                 jsr musicinit
-                
+                lda #0
+                sta $d015
                 ldx #0
 makegameoverspr lda gameoverspritetable,x
                 sta $07fa,x
@@ -1975,9 +2034,9 @@ makegameoverspr lda gameoverspritetable,x
                 sta objpos+1
                 sta objpos+3
                 sta objpos+5
-                
+                    
 ;Now place game over sprites
-
+                
                 ldx #$00
 readgopos       lda gameoverpos,x
                 sta objpos+4,x
@@ -1987,10 +2046,13 @@ readgopos       lda gameoverpos,x
                
                 
 ;Game over loop
+                
                 jsr maskscorepanel
                 
                 lda #0
                 sta firebutton
+                lda #$ff
+                sta $d015
 gameoverloop                
                 jsr synctimer
                 jsr expandmsb

@@ -2,6 +2,7 @@
 ;GAME POINTERS
 rt !byte 0    
 system !byte 0
+vblank !byte 0
 ntsctimer !byte 0  
 cheatmodeon !byte 0
 spawndelay !byte 0
@@ -305,3 +306,8 @@ screenlo        !byte $00,$28,$50,$78,$a0
                 !byte $90,$b8,$e0,$08,$30
                 !byte $58,$80,$a8,$d0,$f8
                 !byte $20,$48,$70,$98,$c0 
+                
+score1          !byte $30,$30,$30,$30,$30,$30                
+score2          !byte $30,$30,$30,$30,$30,$30
+carry           !byte $00,$00,$00,$00,$00,$00
+result          !byte $00,$00,$00,$00,$00,$00

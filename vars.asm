@@ -1,4 +1,15 @@
-
+sprite00x = objpos
+sprite00y = objpos+1
+sprite01x = objpos+2
+sprite01y = objpos+3
+sprite02x = objpos+4
+sprite02y = objpos+5
+sprite03x = objpos+6
+sprite03y = objpos+7
+sprite04x = objpos+8
+sprite04y = objpos+9
+sprite05x = objpos+10
+sprite05y = objpos+11
 ;VARIABLES/LABELS
 
 titlemusic = 0

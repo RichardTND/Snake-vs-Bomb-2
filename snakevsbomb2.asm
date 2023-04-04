@@ -130,7 +130,7 @@ namescreen
 scrolltext
        !text "                                                          "
        !text " ... snake vs bomb 2 - canyon chaos ...   "
-       !text "brought to you by the phaze101 and retro programmers inside snake game jam in april 2023 ...   "
+       !text "participated in the retro programmers inside (rpi) and phaze101 retro snake game jam ...   "
        !text "graphics and game design by hugues (ax!s) poisseroux ...   "
        !text "programming, charset, sound effects and music by richard bayliss ...   "
        !text "copyright (c) 2023 the new dimension ...   like with all of my productions on richard-tnd.itch.io, this is non-commercial software ...   "
@@ -144,7 +144,7 @@ scrolltext
        !text "...   the graphics were drawn by hugues using multipaint by dr. terrorz, charpad v2.7.6 (free edition) and spritepad v2.0 by subchrist software ...   i designed the 1x1 text charset and converted to 1x2 charset using char expander by alpha flight 1970 ...   "
        !text "the music and sound effects were done by me using gt ultra v1.4.1.1 ...   the tape version of this game was mastered using martin piper's tape tool v1.0.0.7, which i transformed to look a bit like the colourful hewson loader ...   "
        !text "finally this game was squeezed down with ts cruncher v1.3 ...   special thanks goes to "
-       !text "hugues poisseroux for the game's graphics, bitmap logo and loading bitmap ...   jason page and cadaver for gt ultra ...   antonio savona for ts cruncher v1.3 ...   martin piper for tape tool v1.0.0.7 ...   finally, a huge thank you goes to "
+       !text "hugues poisseroux for the game's graphics bitmap logo, loading bitmap and testing on his real c64 hardware ...   also thank you goes to dirk schmitt and simon quernhorst for suppport ...   jason page and cadaver for gt ultra ...   antonio savona for ts cruncher v1.3 ...   martin piper for tape tool v1.0.0.7 ...   finally, a huge thank you goes to "
        !text "retro programmers inside and phaze 101 for broadcasting this game live at the snake game jam ...   also to you for downloading "
        !text "this game and playing it on your commodore 64, thec64, ultimate64 or your other devices that support this game ...   "
        !text "that wraps up everything ...   have loads of fun ...   - press fire to play - ...                              "
