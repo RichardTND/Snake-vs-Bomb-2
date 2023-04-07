@@ -1,4 +1,4 @@
-;Snake vs Bomb 2 intro pic linker
+﻿;Snake vs Bomb 2 intro pic linker
 
   !to "piclinker.prg",cbm
   

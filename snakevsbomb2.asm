@@ -1,4 +1,4 @@
-;-------------------------------------------
+﻿;-------------------------------------------
 ;SNAKE VS BOMB 2 - Canyon Run
 ;-------------------------------------------
 ;Written by Richard Bayliss
@@ -7,62 +7,90 @@
 ;(C)2023 The New Dimension
 ;For Retro Programmers Inside Snake Game Jam
 ;------------------------------------------- 
+;FORMAT = C64STUDIO/ACME
+
+;Use $4700 as jump address in packer/cruncher
+;to make executable. 
+
+;-------------------------------------------
+;Uncomment one of these features if needed for testing
 ;testgameend = 1
 ;testirqborder = 1
-;musicoff = 1
+;-------------------------------------------
 
-;Variables/labels
+;Load source code that contain variables and 
+;label
         !source "vars.asm"
+;-------------------------------------------
 
-;Generate program source
+;Generate main program 
+
         !to "snakevsbomb2.prg",cbm
+
+;-------------------------------------------
         
-;Insert mountain charset data (Binary)        
-        *=$0800 "MOUNTAIN GRAPHICS CHARSET"
+;Load mountain charset data (Binary)        
+
+        *=$0800 
         !bin "c64/mountains_charset.bin"
         
-        *=$1000 "DISK ACCESS"
+;-------------------------------------------        
+
+;Load disk access code (Source)
+
+        *=$1000
         !source "diskaccess.asm"
-;Insert sprite data (Binary)
-        *=$2000 "GAME SPRITE DATA"
+        
+;-------------------------------------------        
+
+;Load Sprite Pad V2.0 sprite data (Binary)
+
+        *=$2000
         !bin "c64/sprites.bin"
-        !align $ff,$00
-        !align $ff,$00
-        !align $ff,$00
-        !align $ff,$00
-;Insert game charset data (Binary)        
+
+;-------------------------------------------        
+
+;Load Game charset data (Binary)        
+        
         *=$3000  
 gamecharset        
         !bin "c64/canyon_charset.bin"
         
-;Insert text charset data
+;-------------------------------------------        
+
+;Load text charset data (Binary)
+
         *=$3800  
 titlecharset        
         !bin "c64/text_charset.bin" 
-;Insert canyon map data
+        
+;-------------------------------------------        
+
+;Load canyon screen map data (Binary)
+
         *=$4000 
 canyon        
         !bin "c64/canyon_map.bin"
+
+;-------------------------------------------
         
-;Insert mountains map data        
+;Load mountains map data (Binary)
+
         *=$4400  
 mountains        
         !bin "c64/mountains_map.bin"
-;Insert canyon attributes        
-      *=$4600 
-canyonattribs
-        !bin "c64/canyon_attribs.bin"      
 
-;Snake vs bomb game code
+;-------------------------------------------
 
+;Snake vs bomb startup code
+ 
         *=$4700
         
-        lda #$36
-        sta $01
-        lda $ba
-        sta device
-        
-        ;PAL NTSC check routine
+;Check if C64 type is PAL or NTSC based. 
+;This routine will check the raster size
+;in order to get the correct system 
+;settings
+
 checksystem    
         lda $d012
         cmp $d012
@@ -74,59 +102,106 @@ checksystem
         sta leveltimeexpiry
         lda #1
         sta system
-       ;lda #$12
-       ;sta rline+1
         jmp startmaincode 
 ntsc    lda #0
         sta system 
         lda #$40
         sta leveltimeexpiry
-     ;  lda #$0e
-     ;  sta rline+1
+
+;Start main code by loading in hi scores
+;from disk
   
-startmaincode             
+startmaincode       
+        
         jsr loadhiscores
-       ; jmp gamestart
+       
+; ... then jump to the title screen code
+
         jmp titlescreen
 
+
+;-------------------------------------------
+
+;Load main game code
+
         !source "gamecode.asm"
+
+;-------------------------------------------
      
+;Load end screen code
+
         !source "endscreen.asm"
+
+;-------------------------------------------        
+
+;Load end screen (Binary)
 
 endscreentext
         !bin "c64/endscreen.bin"
    
-        ;Title screen code
+
+;-------------------------------------------
+
+;Load title screen code 
+
         !source "titlescreen.asm"
-!align $ff,0       
-        ;Hi score code
-        !source "hiscore.asm"
         
-;Insert relocated music data (Program format)
+;-------------------------------------------        
+!align $ff,0 ;Align the memory to the next $xx00 bytes
+      
+;Load in hi score code 
+
+        !source "hiscore.asm"
+
+;-------------------------------------------
+        
+;Load relocated music data (Program format)
         *=$8000  
        !bin "c64/music.prg",,2           
-    
-;Insert credits text
+
+;-------------------------------------------    
+       
+;Load credits screen matrix (Binary)
 
         *=$a400  
 creditstext
         !bin "c64/text_credits.bin"
+        
+;-------------------------------------------        
+
+;Load default hi score name list (Binary)
+
         *=$a600  
-;Insert hi score list
 hiscoretable
         !bin "c64/text_hiscores.bin"
+
+
+;-------------------------------------------        
+
+;Load scoring list (Binary)
         *=$a800  
-;Insert scoring list        
+
 scoringlist
         !bin "c64/text_scoring.bin"
+ 
+;-------------------------------------------        
+
+;Load name message screen (Binary)
+
         *=$aa00  
-;Insert name screen
+
+
 namescreen 
-        !bin "c64/text_nameentry.bin"        
+        !bin "c64/text_nameentry.bin"         
+
+;-------------------------------------------        
     
-;Scroll text 
-       *=$b000 "SCROLL TEXT MESSAGE"
-       !ct scr
+;Title screen scroll text message
+
+       *=$b000 
+       
+       !ct scr ;Convert to C64 screen text
+       
 scrolltext
        !text "                                                          "
        !text " ... snake vs bomb 2 - canyon chaos ...   "
@@ -143,29 +218,41 @@ scrolltext
        !text "good luck! ...    this game was programmed and compiled using endurion's c64studio v7.3.1 and v7.4 "
        !text "...   the graphics were drawn by hugues using multipaint by dr. terrorz, charpad v2.7.6 (free edition) and spritepad v2.0 by subchrist software ...   i designed the 1x1 text charset and converted to 1x2 charset using char expander by alpha flight 1970 ...   "
        !text "the music and sound effects were done by me using gt ultra v1.4.1.1 ...   the tape version of this game was mastered using martin piper's tape tool v1.0.0.7, which i transformed to look a bit like the colourful hewson loader ...   "
-       !text "finally this game was squeezed down with ts cruncher v1.3 ...   special thanks goes to "
-       !text "hugues poisseroux for the game's graphics bitmap logo, loading bitmap and testing on his real c64 hardware ...   also thank you goes to dirk schmitt and simon quernhorst for suppport ...   jason page and cadaver for gt ultra ...   antonio savona for ts cruncher v1.3 ...   martin piper for tape tool v1.0.0.7 ...   finally, a huge thank you goes to "
+       !text "finally this game was squeezed down with exomizer v3.1.1 ...   special thanks goes to "
+       !text "hugues poisseroux for the game's graphics bitmap logo, loading bitmap and testing on his real c64 hardware ...   jason page and cadaver for gt ultra ...   magnus lind for exomizer ...   martin piper for tape tool v1.0.0.7 ...   finally, a huge thank you goes to "
        !text "retro programmers inside and phaze 101 for broadcasting this game live at the snake game jam ...   also to you for downloading "
        !text "this game and playing it on your commodore 64, thec64, ultimate64 or your other devices that support this game ...   "
+       
        !text "that wraps up everything ...   have loads of fun ...   - press fire to play - ...                              "
        !text "                                                            "
        !byte 0
            
+;-------------------------------------------        
+
+;Load sound effects table 
+       
         !source "sfx.asm"
 
-;Insert logo video RAM
+;-------------------------------------------        
+
+;Insert logo video RAM (C64 Program)
   
-        *=$c400 "BITMAP LOGO: VIDEO RAM"
+        *=$c400
         !bin "c64/logocolram.prg",,2
 
-;Insert logo colour ram data       
+;-------------------------------------------        
+
+;Insert logo colour ram data (C64 Program)
   
-       *=$c800 "BITMAP LOGO: COLOUR RAM"
+       *=$c800 
 logocolram       
        !bin "c64/logovidram.prg",,2
 
-;Insert logo bitmap data
+;-------------------------------------------        
 
-       *=$e000 "BITMAP LOGO: BITMAP"
+;Insert logo bitmap data (C64 Program)
+
+       *=$e000 
        !bin "c64/logobitmap.prg",,2
-                               
+
+;END                               

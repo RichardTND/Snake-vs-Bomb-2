@@ -1,4 +1,4 @@
- 
+﻿ 
 ;GAME POINTERS
 rt !byte 0    
 system !byte 0
@@ -107,46 +107,46 @@ objpos !byte $00,$00,$00,$00,$00,$00,$00,$00
 
 ;Low and hi-byte table for the spawn position values - These indicate positioning of the top left characters
 
-spawnpos1lo     !byte <spawncolumn5,<spawncolumn6,<spawncolumn7,<spawncolumn5,<spawncolumn6,<spawncolumn7,<spawncolumn5
-spawnpos1hi     !byte >spawncolumn5,>spawncolumn6,>spawncolumn7,>spawncolumn5,>spawncolumn6,>spawncolumn7,>spawncolumn5
+spawnpos1lo     !byte <spawncolumn5,<spawncolumn6,<spawncolumn7,<spawncolumn5,<spawncolumn6,<spawncolumn7,<spawncolumn5,<spawncolumn6
+spawnpos1hi     !byte >spawncolumn5,>spawncolumn6,>spawncolumn7,>spawncolumn5,>spawncolumn6,>spawncolumn7,>spawncolumn5,>spawncolumn6
 
 ;Low and hi-byte table for the spawn position values - These indicate positioning of the top right characters
 
-spawnpos2lo     !byte <spawncolumn5b,<spawncolumn6b,<spawncolumn7b,<spawncolumn5b,<spawncolumn6b,<spawncolumn7b,<spawncolumn5b
-spawnpos2hi     !byte >spawncolumn5b,>spawncolumn6b,>spawncolumn7b,>spawncolumn5b,>spawncolumn6b,>spawncolumn7b,>spawncolumn5b
+spawnpos2lo     !byte <spawncolumn5b,<spawncolumn6b,<spawncolumn7b,<spawncolumn5b,<spawncolumn6b,<spawncolumn7b,<spawncolumn5b,<spawncolumn6b
+spawnpos2hi     !byte >spawncolumn5b,>spawncolumn6b,>spawncolumn7b,>spawncolumn5b,>spawncolumn6b,>spawncolumn7b,>spawncolumn5b,>spawncolumn6b
 
 ;Low and hi-byte table for the spawn position values - These indicate positioning of the bottom left characters
 
-spawnpos3lo     !byte <spawncolumn6,<spawncolumn7,<spawncolumn8,<spawncolumn6,<spawncolumn7,<spawncolumn8,<spawncolumn6
-spawnpos3hi     !byte >spawncolumn6,>spawncolumn7,>spawncolumn8,>spawncolumn6,>spawncolumn7,>spawncolumn8,>spawncolumn6
+spawnpos3lo     !byte <spawncolumn6,<spawncolumn7,<spawncolumn8,<spawncolumn6,<spawncolumn7,<spawncolumn8,<spawncolumn6,<spawncolumn7
+spawnpos3hi     !byte >spawncolumn6,>spawncolumn7,>spawncolumn8,>spawncolumn6,>spawncolumn7,>spawncolumn8,>spawncolumn6,>spawncolumn7
 
 ;Low and hi-byte table for the spawn position values - These indicate positioning of the bottom right characters
 
-spawnpos4lo     !byte <spawncolumn6b,<spawncolumn7b,<spawncolumn8b,<spawncolumn6b,<spawncolumn7b,<spawncolumn8b,<spawncolumn6b
-spawnpos4hi     !byte >spawncolumn6b,>spawncolumn7b,>spawncolumn8b,>spawncolumn6b,>spawncolumn7b,>spawncolumn8b,>spawncolumn6b
+spawnpos4lo     !byte <spawncolumn6b,<spawncolumn7b,<spawncolumn8b,<spawncolumn6b,<spawncolumn7b,<spawncolumn8b,<spawncolumn6b,<spawncolumn7b
+spawnpos4hi     !byte >spawncolumn6b,>spawncolumn7b,>spawncolumn8b,>spawncolumn6b,>spawncolumn7b,>spawncolumn8b,>spawncolumn6b,>spawncolumn7b
 
 
 ;SPAWN TABLES - UPPER HALF OF GAME SCREEN
 
 ;Low and hi-byte table for the spawn position values - These indicate positioning of the top left characters
 
-spawnpos5lo     !byte <spawncolumn1,<spawncolumn2,<spawncolumn3,<spawncolumn4,<spawncolumn1,<spawncolumn2,<spawncolumn3
-spawnpos5hi     !byte >spawncolumn1,>spawncolumn2,>spawncolumn3,>spawncolumn4,>spawncolumn1,>spawncolumn2,>spawncolumn3
+spawnpos5lo     !byte <spawncolumn1,<spawncolumn2,<spawncolumn3,<spawncolumn4,<spawncolumn1,<spawncolumn2,<spawncolumn3,<spawncolumn1
+spawnpos5hi     !byte >spawncolumn1,>spawncolumn2,>spawncolumn3,>spawncolumn4,>spawncolumn1,>spawncolumn2,>spawncolumn3,>spawncolumn1
 
 ;Low and hi-byte table for the spawn position values - These indicate positioning of the top right characters
 
-spawnpos6lo     !byte <spawncolumn1b,<spawncolumn2b,<spawncolumn3b,<spawncolumn4b,<spawncolumn1b,<spawncolumn2b,<spawncolumn3b
-spawnpos6hi     !byte >spawncolumn1b,>spawncolumn2b,>spawncolumn3b,>spawncolumn4b,>spawncolumn1b,>spawncolumn2b,>spawncolumn3b
+spawnpos6lo     !byte <spawncolumn1b,<spawncolumn2b,<spawncolumn3b,<spawncolumn4b,<spawncolumn1b,<spawncolumn2b,<spawncolumn3b,<spawncolumn1b
+spawnpos6hi     !byte >spawncolumn1b,>spawncolumn2b,>spawncolumn3b,>spawncolumn4b,>spawncolumn1b,>spawncolumn2b,>spawncolumn3b,>spawncolumn1b
 
 ;Low and hi-byte table for the spawn position values - These indicate positioning of the bottom left characters
 
-spawnpos7lo     !byte <spawncolumn2,<spawncolumn3,<spawncolumn4,<spawncolumn5,<spawncolumn2,<spawncolumn3,<spawncolumn4
-spawnpos7hi     !byte >spawncolumn2,>spawncolumn3,>spawncolumn4,>spawncolumn5,>spawncolumn2,>spawncolumn3,>spawncolumn4
+spawnpos7lo     !byte <spawncolumn2,<spawncolumn3,<spawncolumn4,<spawncolumn5,<spawncolumn2,<spawncolumn3,<spawncolumn4,<spawncolumn2
+spawnpos7hi     !byte >spawncolumn2,>spawncolumn3,>spawncolumn4,>spawncolumn5,>spawncolumn2,>spawncolumn3,>spawncolumn4,>spawncolumn2
 
 ;Low and hi-byte table for the spawn position values - These indicate positioning of the bottom right characters
 
-spawnpos8lo     !byte <spawncolumn2b,<spawncolumn3b,<spawncolumn4b,<spawncolumn5b,<spawncolumn2b,<spawncolumn3b,<spawncolumn4b
-spawnpos8hi     !byte >spawncolumn2b,>spawncolumn3b,>spawncolumn4b,>spawncolumn5b,>spawncolumn2b,>spawncolumn3b,>spawncolumn4b
+spawnpos8lo     !byte <spawncolumn2b,<spawncolumn3b,<spawncolumn4b,<spawncolumn5b,<spawncolumn2b,<spawncolumn3b,<spawncolumn4b,<spawncolumn2b
+spawnpos8hi     !byte >spawncolumn2b,>spawncolumn3b,>spawncolumn4b,>spawncolumn5b,>spawncolumn2b,>spawncolumn3b,>spawncolumn4b,>spawncolumn2b
 
 
 
@@ -311,3 +311,5 @@ score1          !byte $30,$30,$30,$30,$30,$30
 score2          !byte $30,$30,$30,$30,$30,$30
 carry           !byte $00,$00,$00,$00,$00,$00
 result          !byte $00,$00,$00,$00,$00,$00
+
+rowtemp         !byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00

@@ -1,15 +1,17 @@
-                       
-
+﻿;SNAKE VS BOMB 2
 ;GAME CODE
       
+;-------------------------------------------        
+
 ;Call routine to stop existing interrupts/IRQs from
 ;playing and also switch the screen off. 
 
-gamestart       jsr killirqs
+gamestart       
+                jsr killirqs
+
+;-------------------------------------------        
                
-                
-                
-;Grab all graphics map data and place those onto the screen.
+;Grab all graphics map data (exported as map from Charpad V2.7.6) and place those onto the screen.
 ;Panel = 1 row (leave blank), Mountains = 6 rows, Canyon = 18 rows
 
                 ldx #$00
@@ -69,10 +71,12 @@ buildmap        lda mountains,x
                 cpx #40
                 beq stopmapbuild
                 jmp buildmap
-                
+
 stopmapbuild    ;Map draw finished. 
 
-                ;Draw mountain attribs
+;-------------------------------------------        
+
+;Paint mountains chars multicolour red
                 
                 ldx #$00
 paintmountains  lda #$0a
@@ -81,26 +85,32 @@ paintmountains  lda #$0a
                 inx
                 bne paintmountains
                 
+                
                 lda #$03
                 sta $dd00
+                
+;Paint the scenery multicoloured green
+                
                 ldx #$00
-paint           ldy screen+(7*40),x
-                lda canyonattribs,y
+paint           
+                lda #$0d
                 sta colour+(7*40),x
-                ldy screen+(2*$100),x
-                lda canyonattribs,y
                 sta colour+(2*$100),x
-                ldy screen+(2*$100)+$e8,x
-                lda canyonattribs,y
                 sta colour+(2*$100)+$e8,x
                 inx
                 bne paint
+
+;-------------------------------------------        
+
+;Set border and background colour black
                
                 lda #$00
                 sta $d020
                 sta $d021 
+
+;-------------------------------------------        
                 
-                ;Reset level and score panel 
+;Reset level and score panel 
                 
                 
                 lda #$31
@@ -117,8 +127,9 @@ zeroscore       lda #$30
                 cpx #$06
                 bne zeroscore
                 
+;-------------------------------------------        
               
-                ;Initialize the lane
+;Initialize the lane
                 
                 ldx #$00
 setlane         lda #lane
@@ -127,8 +138,10 @@ setlane         lda #lane
                 cpx #32
                 bne setlane
                 
+;-------------------------------------------        
                
-                ;Place score panel on screen 
+;Place score panel on screen 
+
                 jsr maskscorepanel
                 
                 ldx #$00
@@ -137,8 +150,10 @@ paintpanel      lda #$0d
                 inx
                 cpx #40
                 bne paintpanel
+
+;-------------------------------------------        
                 
-                ;Initialize all necessary game pointers
+;Initialize all necessary game pointers
                 
                 lda #0
                 sta spawndelay
@@ -155,12 +170,19 @@ paintpanel      lda #$0d
                 ;Reset spawn counter 
                 lda #$40
                 sta spawndelayexpiry
+
+;-------------------------------------------        
                 
-                ;Setup the game sprites
+;Setup the game sprites
                 
                 lda #0
                 sta spriteanimpointer ;Default animation speed and pointer
                 sta spriteanimdelay
+
+;-------------------------------------------        
+
+;Initialize all bytes of the parallax 
+;scroll table
         
                 ldx #$00
 setd016table                
@@ -169,32 +191,44 @@ setd016table
                 inx
                 cpx #6
                 bne setd016table
+
+;-------------------------------------------        
+
+;Sprites behind background
                 
+                lda #$ff
+                sta $d01b
+
+;-------------------------------------------        
                
-;Prepare in game IRQ raster interrupts          
+;Prepare in game IRQ raster interrupts       
+              
                 ldx #$fb
                 txs
                 ldx #<gameirq1
                 ldy #>gameirq1
+                stx $fffe
+                sty $ffff
                 lda #$7f
-                stx $0314
-                sty $0315
                 sta $dc0d
                 sta $dd0d
-                
-                lda #split1
+                lda #$32
                 sta $d012
                 lda #$1b
                 sta $d011
                 lda #$01
-                sta $d019
                 sta $d01a
+                
+                ;Initialize get ready jingle
                 lda #getreadymusic
                 jsr musicinit
                 cli
                 jmp getreadymain
               
-                
+;-------------------------------------------        
+
+;Get Ready screen setup
+
 getreadymain
                 ;Enable all sprites
                 
@@ -244,6 +278,10 @@ makegrsprites   lda getreadyspritetable,x
                 lda #$07
                 sta $d026
                 
+;-------------------------------------------        
+
+;Main loop for GET READY, until fire in 
+;joystick port 2 is pressed
                 
 getreadyloop    jsr synctimer
                 jsr expandmsb
@@ -260,8 +298,9 @@ getreadyloop    jsr synctimer
                 bvc getreadyloop
                 lda #0
                 sta firebutton
+;-------------------------------------------        
        
-                ;Setup the sprite position table to object position
+;Setup the game sprite position table to object position
                 
                 ldx #$00
 setstartpos     lda startpos,x
@@ -269,8 +308,10 @@ setstartpos     lda startpos,x
                 inx
                 cpx #$10
                 bne setstartpos
+
+;-------------------------------------------        
                 
-                ;Setup frames for player sprite
+;Setup type and colour for player sprite
                 
                 lda largesnakehead
                 sta $07f8
@@ -278,9 +319,7 @@ setstartpos     lda startpos,x
                 sta $07f9
                 lda largesnaketail
                 sta $07fa
-                
-                ;Setup colour scheme for player sprite
-                
+
                 ldx #$00
 setsprcolour    lda #$01
                 sta $d027,x
@@ -308,131 +347,101 @@ setsprcolour    lda #$01
                 sta $d01b
                 sta $d01d
                 
+;-------------------------------------------        
+
+;Initialize in game music
+
                 lda #gamemusic
                 jsr musicinit
-                
+
+;-------------------------------------------        
+
+;Jump to main game code                
+
                 jmp gameloop
 
-; Kill off all IRQ interrupts that are currently playing also
-; make a short delay, in order to prevent sensitive fire
-;button pressing
+;-------------------------------------------        
 
-killirqs        sei
-                
-                ;lda #251
-                ;sta 808
-               
-                
-                
-                lda #$00
-                sta $d011
-                sta $d019
-                sta $d01a
-                sta $d015
-                sta $d01b
-               
-                lda #$81
-                sta $dc0d
-                sta $dd0d
-                ldx #$31
-                ldy #$ea
-                stx $0314
-                sty $0315
-                
-                 ldx #$00
-clearscreent    lda #$00
-                sta $0400,x
-                sta $0500,x
-                sta $0600,x
-                sta $06e8,x
-                sta $d800,x
-                sta $d900,x
-                sta $da00,x
-                sta $dae8,x
-                inx
-                bne clearscreent
-                
-                ;Silence the SID chip
-                ldx #$00
-quiet           lda #$00
-                sta $d400,x
-                inx
-                cpx #$18
-                bne quiet
-                
-                ;Sprite position also 
-                
-                ldx #$00
-zerosprposy     lda #$00
-                sta $d000,x
-                sta objpos,x
-                inx
-                cpx #$10
-                bne zerosprposy
-                
-                ;Pointless, but useful delay routine
-                
-;                ldx #$00
-delay1          ldy #$00
-delay2          iny
-                bne delay2
-                inx
-                bne delay1
-                rts
-                !byte $00
+;Load IRQ Raster interrupt source code
+
                 !source "irq.asm"                
                 
-                ;End of IRQ kill routine
-                 
-                
+;-------------------------------------------                        
 ;Main game loop
 
-gameloop        ;Check for game pause
+
+gameloop    
+
+;-------------------------------------------        
+
+;Check if CONTROL has been pressed. If it 
+;has then the game should be paused.
+
                 lda #4
                 bit $dc01
                 bne continueplay
+                
+;The game is paused, check if SPACEBAR or
+;FIRE has been pressed to resume the game.
                 
 gamepaused                
                 lda #16
                 bit $dc01
                 bne checkfireunpause
-                jmp continueplay
+                jmp continueplay                
+                
 checkfireunpause 
                 lda #16
                 bit $dc00
                 bne checkabort
                 jmp continueplay
+                
+;Still paused, check if LEFT ARROW has been
+;pressed. If so, the game aborts to the title
+;screen.
+                
 checkabort      lda #2
                 bit $dc01
                 bne gamepaused
                 jmp titlescreen
 
+;-------------------------------------------        
+
+;Main game loop
+
 continueplay    jsr synctimer
                 jsr expandmsb       ;Expand sprite X position and store to hardwarey
                 jsr scrollcontrol   ;Main game screen scrolling
-               
-                
-               
                 jsr gamecontrol
                 jmp gameloop
+               
+;-------------------------------------------        
+
+;Game control, calls for level, player, 
+;animation, and other subroutines inside
+;the main game loop.
                 
 gamecontrol     
                 jsr levelcontrolmain
                 jsr playercontrol   ;Player, joystick and sprite/background collision control
                 jsr animbombs
+                jsr spriteanimation
                 jsr scrolllevup
                 rts  
+;-------------------------------------------        
 
-;Synchronize timer
+;Synchronize timer with IRQ raster 
+;interrupt (rt = raster interrupt timer)
 
 synctimer       lda #0
                 sta rt
                 cmp rt
                 beq *-3 
-                
                 rts
                 
-;Animate bombs
+;-------------------------------------------                        
+                
+;Animate bombs character set 
 
 animbombs       lda bombanimdelay
                 cmp #3
@@ -467,8 +476,13 @@ animbloop3      lda animbombsrc1,x
                 bne animbloop3
                 rts
                 
-;Music player (PAL NTSC)
-musicplayer     lda system
+;-------------------------------------------        
+                
+;Music player speed check and control
+;(PAL NTSC)
+
+musicplayer     
+                lda system
                 bne pal
                 inc ntsctimer
                 lda ntsctimer
@@ -479,10 +493,14 @@ pal             jsr musicplay
 resetmusdelay   lda #0
                 sta ntsctimer
                 rts
+
+;-------------------------------------------        
                 
-;Expand X position for all game sprites
+;Expand X position for all game sprites to
+;use whole screen area, excluding borders.
                 
-expandmsb       ldx #$00
+expandmsb     
+                ldx #$00
 exploop         lda objpos+1,x
                 sta $d001,x
                 lda objpos,x
@@ -495,26 +513,39 @@ exploop         lda objpos+1,x
                 bne exploop
                 rts             
                                 
-
+;-------------------------------------------        
                 
-;Scroll controller
+;Parallax and game scroll sub routines 
+
 scrollcontrol  
                 jsr parallax1
                 jsr parallax2
-                jsr spawnlogic 
-                rts
+                jmp spawnlogic 
                 
-            
+;-------------------------------------------                    
+
+;Parallax 1 - Controls mountain, top rocks,
+;top plants wrap-around scrolling            
+
 parallax1       jsr scrollmountains
                 jsr scrollrockstop
-                jsr scrollplantstop
-                rts
+                jmp scrollplantstop
+                
+;-------------------------------------------                        
+
+;Parallax 2 - Controls main game screen,
+;bottom plants, bottom rocks wrap-around 
+;scrolling.
+
 parallax2                
-                jsr scrollmainscreen
+               
                 jsr scrollplantsbottom
                 jsr scrollrocksbottom
-                rts
-;Parallax scroll 1 - Scroll mountains.
+                jmp scrollmainscreen
+
+;-------------------------------------------        
+
+;Scroll wrap-around mountains.
 
 scrollmountains
                
@@ -574,12 +605,12 @@ scrloop1
                 sta screen+(5*40)+39
                 lda rowtemp+5
                 sta screen+(6*40)+39
-                
- 
 skiprockstop                
                 rts
 
+;-------------------------------------------        
 
+;Scroll wrap-around top rocks
                
 scrollrockstop                
                lda d016table+1
@@ -624,11 +655,6 @@ scrollplantstop
                lda screen+(10*40)
                sta rowtemp+9
            
-            ;   lda colour+(9*40)
-            ;   sta colourtemp 
-            ;   lda colour+(10*40)
-            ;   sta colourtemp+1
-               
                ldx #$00
 scrloop3       lda screen+(9*40)+1,x
                sta screen+(9*40),x
@@ -638,32 +664,18 @@ scrloop3       lda screen+(9*40)+1,x
                cpx #$27
                bne scrloop3
                
-               ldx #$00
-scrloop3b                  
-            ;   lda colour+(9*40)+1,x
-            ;   sta colour+(9*40),x
-            ;   lda colour+(10*40)+1,x
-            ;   sta colour+(10*40),x
-            ;   inx
-            ;   cpx #$27
-            ;   bne scrloop3b
-               
                lda rowtemp+8
                sta screen+(9*40)+39
                lda rowtemp+9
                sta screen+(10*40)+39
-               
-            ;   lda colourtemp 
-            ;   sta colour+(9*40)+39
-           ;    lda colourtemp+1
-           ;    sta colour+(10*40)+39
-               
+                   
 skipmainscroll               
                rts
+;-------------------------------------------        
                 
-;Scroll main screen. This will not need any wrap around, since
-;fruit and bombs are spawned from the right of the screen to the
-;left.
+;Scroll main screen (Where fruit and bombs 
+;are spawned into the game screen, where 
+;the snake can move up/down).
 
 scrollmainscreen
               lda d016table+3
@@ -763,8 +775,9 @@ zeroloop      lda #lane
               
 skipplantsbottom              
               rts
+;-------------------------------------------        
       
-;Scroll plants at bottom of the screen
+;Wrap-around scroll botto plants
               
 scrollplantsbottom
              
@@ -779,10 +792,7 @@ scrollplantsbottom
               sta rowtemp+10
               lda screen+(22*40)
               sta rowtemp+11
-            ;  lda colour+(21*40)
-            ;  sta colourtemp+2
-            ;  lda colour+(22*40)
-            ;  sta colourtemp+3
+              
               ldx #$00
 scrloop5
               lda screen+(21*40)+1,x
@@ -792,28 +802,18 @@ scrloop5
               inx
               cpx #$27
               bne scrloop5
-           ;   ldx #$00
-scrloop5b              
-           ;   lda colour+(21*40)+1,x
-           ;   sta colour+(21*40),x
-           ;   lda colour+(22*40)+1,x
-           ;   sta colour+(22*40),x
-           ;   inx
-           ;   cpx #$27
-           ;   bne scrloop5b
               
               lda rowtemp+10
               sta screen+(21*40)+39
               lda rowtemp+11
               sta screen+(22*40)+39
-            ;  lda colourtemp+2
-            ;  sta colour+(21*40)+39
-            ;  lda colourtemp+3
-            ;  sta colour+(22*40)+39
+           
 skiprocksbottom              
               rts
-              
-;Finally scroll the rocks at the bottom 
+           
+;-------------------------------------------                      
+
+;Wrap-around scroll bottom rocks
 
 scrollrocksbottom
               lda d016table+5
@@ -842,8 +842,11 @@ scrloop6      lda screen+(23*40)+1,x
               lda rowtemp+13
               sta screen+(24*40)+39
               rts
+;-------------------------------------------        
                 
-;Game spawn logic
+;Game spawn logic. First reads delay value
+;and then after expired, calls randomizer
+;and positions new objects on screen.
 
 spawnlogic       
                 lda spawndelay
@@ -964,6 +967,7 @@ destpos4        sta spawncolumn4
                 lda #0
                 sta spawnvalue
                 rts
+;-------------------------------------------        
                  
 ;Random timer routine for working out sequence number to 
 ;read from table (for spawning objects / setting position).                
@@ -988,8 +992,10 @@ randomizer      lda rand+1
                 adc #$36
                 sta rand+1
                 rts
-                
-;Main game level control
+
+;-------------------------------------------                        
+;Main game level control and snake status
+;paintt routines.
 
 levelcontrolmain
   
@@ -997,8 +1003,8 @@ levelcontrolmain
                 cmp leveltimeexpiry ;milliseconds
                 beq nexttime
                 inc leveltime
-                 
                 rts
+                
 nexttime        lda #0
                 sta leveltime
                 inc leveltime+1
@@ -1051,8 +1057,11 @@ nextlevel       lda #0
                 jsr award1000points
                 jsr maskscorepanel
                 jsr paintsnakegreen
+;-------------------------------------------        
                 
-                ;Position level up sprites and make them scroll across the screen
+;Position level up sprites and make them scroll 
+;across the screen
+
                 ldx #$00
 makesprs        lda levelupspritetable,x
                 sta $07fb,x
@@ -1074,8 +1083,11 @@ poslevup        lda levuppostable,x
                 ldx #14
                 jsr sfxplay
                 rts
+                
+;-------------------------------------------        
 
-;Game completed
+;Game complete loop
+
 gamecomplete
                 jsr synctimer
                 jsr expandmsb
@@ -1085,6 +1097,7 @@ gamecomplete
                 jsr parallax1
                 jsr parallax2
                 jmp gamecomplete
+;-------------------------------------------        
 
 ;Move the snake out of the game scenery.
 
@@ -1107,6 +1120,7 @@ notexitend      sta objpos+4
                 rts
                 
 ;Scrolling stops, and well done sprites appear on screen.
+;-------------------------------------------        
 
 ;Enable all sprites
 allspritesout               
@@ -1125,9 +1139,11 @@ allspritesout
                 sta $d01d
                 sta firebutton 
                 
-             
+                ;Well done jingle
                 lda #welldonemusic
                 jsr musicinit
+;-------------------------------------------        
+;Make well done sprites
                 
                 ldx #$00
 makewdsprites   lda welldonespritetable,x
@@ -1162,6 +1178,10 @@ makewdsprites   lda welldonespritetable,x
                 sta $d026
                 lda #0
                 sta firebutton
+                
+;-------------------------------------------        
+;Main loop for Well Done routine                
+                
 wdloop          jsr synctimer      
                 jsr expandmsb
                 jsr parallax1
@@ -1178,18 +1198,15 @@ wdloop          jsr synctimer
                 bvc wdloop
                 jmp endscreen
                 
-                
-                
-                ;Continue animation, but make snake slither out of the screen.
-                
-  
-;Scroll level up sprites across the screen. After they have
-;left the screen, remove them                
+;-------------------------------------------      
+                  
+;Scroll level up sprites across the screen. 
+;After they are offset remove them.
                 
 scrolllevup     
                 lda objpos+12
                 sec
-                sbc #2
+                sbc #4
                 cmp #$02
                 bcs notoffset
                 lda #$00
@@ -1208,8 +1225,10 @@ notoffset       sta objpos+12
                 sbc #12
                 sta objpos+6
                 rts
+;-------------------------------------------        
                 
 ;Paint snake gold according to distance
+;the player has travelled
 
 paintsnakegold1 lda #$0f ;Yellow = gold
                 sta colour+24
@@ -1250,16 +1269,18 @@ paintloop       lda #$0d
                 bne paintloop
                 rts
                 
+;-------------------------------------------                        
+
 ;Player control (and animation)
 
 playercontrol   
                 
                 jsr joystickcontrol       ;call joystick control for the main player
-                jsr spriteanimation       ;Animate the main player
                 jsr snakerange            ;set snake range for size visual position of the snake sprites
-                jsr spritetocharcollision ;Sprite to charset collision routine (scoring, death, etc).
+                jmp spritetocharcollision ;Sprite to charset collision routine (scoring, death, etc).
+
+;-------------------------------------------        
                 
-                rts
 ;Player joystick control (up or down only)
 
 joystickcontrol
@@ -1293,8 +1314,10 @@ updatebottomposition
                 sta objpos+5
 nogamejoycontrol                
                 rts
+;-------------------------------------------        
                 
 ;Sprite animation routines 
+
 spriteanimation                
                 lda spriteanimdelay
                 cmp #5
@@ -1324,6 +1347,7 @@ animsprites     lda #0
 loopspriteanim  ldx #0
                 stx spriteanimpointer
                 rts
+;-------------------------------------------        
   
 ;Check snake Y position range, so that the correct size frame
 ;can be picked to be stored onto the actual sprite
@@ -1351,7 +1375,10 @@ under
                 sta $07fa
                 rts
                 
-;Sprite to background collision detection
+;-------------------------------------------                        
+
+;Software based sprite to background 
+;collision routine.
 
 spritetocharcollision
  
@@ -1372,15 +1399,13 @@ spritetocharcollision
                 jsr testcollider
                 lda #<sprite02x
                 sta collxtest+1
-                lda #<sprite03y
+                lda #<sprite02y
                 sta collytest+1
-                
-                
                 
 testcollider                
 collytest       lda objpos+1
                 sec
-                sbc #$32
+                sbc #$36
                 lsr
                 lsr
                 lsr
@@ -1413,7 +1438,7 @@ selfmodi         ldy #$00
 skipmod         dex
                 bne bgcloop
                 rts
-                
+;-------------------------------------------                        
 ;Check object characters to see whether or not they relate to fruit or bombs
    
 checkobjectchars 
@@ -1534,6 +1559,7 @@ nothitsmallbomb
 nothitsmallbomb2
                jmp selfmodi
                
+;-------------------------------------------        
 
 ;Snake eats apple, remove apple, score 100 points and play
 ;apple sound effects.
@@ -1552,6 +1578,8 @@ playapplesfx   lda #<snakeapplessfx
                ldx #14
                jsr sfxplay
                rts
+
+;-------------------------------------------        
                
 ;Snake eats banana, remove banana, score 200 points and play
 ;banana sound effects.
@@ -1570,6 +1598,8 @@ playbananasfx
               ldx #14
               jsr sfxplay
               rts
+
+;-------------------------------------------        
               
 ;Snake eats cherries, remove cherries, score 300 points and
 ;play cherries sound effects.
@@ -1588,6 +1618,8 @@ playcherriessfx
               ldx #14
               jsr sfxplay
               rts
+
+;-------------------------------------------        
               
 ;Snake eats strawberry, remove strawberry, score 500 points and
 ;play strawberry sound effects.
@@ -1606,6 +1638,8 @@ playstrawberrysfx
               ldx #14
               jsr sfxplay
               rts
+
+;-------------------------------------------        
               
 ;Finally, the snake hits a bomb. Remove the bomb and destroy 
 ;the snake.
@@ -1616,9 +1650,28 @@ bombkillplayerleft
               
 bombkillplayerright
               jsr removecharright
+
+;-------------------------------------------        
               
 ;Kill the snake
+
 killsnake    
+              ;Clear all existing objects on road
+              
+              ldx #$00
+clearroad     lda #lane 
+              sta screen+(12*40),x
+              sta screen+(13*40),x
+              sta screen+(14*40),x
+              sta screen+(15*40),x
+              sta screen+(16*40),x
+              sta screen+(17*40),x
+              sta screen+(18*40),x
+              sta screen+(19*40),x
+              inx
+              cpx #40
+              bne clearroad
+
               ldx #0
 resetd016     lda #0
               sta d016table,x
@@ -1637,9 +1690,7 @@ resetd016     lda #0
               jsr sfxplay
               
               jmp snakedestroyer
-              
-               
-;Replace object characters as lane
+;-------------------------------------------        
               
 ;Remove characters from top left
                
@@ -1658,6 +1709,8 @@ removecharleft
                dey
                sta (screenlostore),y
                rts
+
+;-------------------------------------------        
                
 ;Remove characters from top right 
 
@@ -1675,6 +1728,7 @@ removecharright
                iny
                sta (screenlostore),y
                rts
+;-------------------------------------------        
     
 ;Turn apple  char into 100 points
 
@@ -1712,6 +1766,8 @@ appleto100ptsright
               lda #points100d
               sta (screenlostore),y
               rts
+
+;-------------------------------------------        
               
 ;Transform banana into 200 points              
               
@@ -1748,6 +1804,7 @@ bananato200ptsright
               lda #points200d
               sta (screenlostore),y
               rts
+;-------------------------------------------        
               
 ;Transform cherries to 300 points              
 
@@ -1785,6 +1842,7 @@ cherriesto300ptsright
               sta (screenlostore),y
               rts
               
+;-------------------------------------------                      
 ;Transform stawberry to 500 points
 
 strawberryto500ptsleft
@@ -1821,12 +1879,10 @@ strawberryto500ptsright
               sta (screenlostore),y
               rts
 
-              
-              
-               
+;-------------------------------------------        
 ;Add score values according to fruit eaten 
 
-score500      lda #5
+score500      lda #5      
               sta vblank
               jmp scorepoints
               
@@ -1842,7 +1898,7 @@ score100      lda #1
               sta vblank
               jmp scorepoints
              
-
+;-------------------------------------------        
                
 ;The player scores points for eating fruit 
                
@@ -1888,8 +1944,10 @@ scoreloop3    lda result,x
               rts
               
          rts  
+;-------------------------------------------        
               
-;Award 1000 points for level completion              
+;Award 1000 points for level completion             
+ 
 award1000points
               inc score+2
               ldx #2
@@ -1903,7 +1961,9 @@ scoreok2      dex
               bne scoreloop4
               jsr maskscorepanel
               rts
-            
+              
+;-------------------------------------------                    
+
 ;Mask status panel for score update
 
 maskscorepanel  ldx #$00
@@ -1914,16 +1974,25 @@ putstatuspanel  lda statuspanel,x
                 bne putstatuspanel
                 rts
                 
+;-------------------------------------------        
+                
 ;The main snake destroyer subroutine 
 
 snakedestroyer  
                 lda #0
                 sta explodeanimpointer
                 sta explodeanimdelay 
+                
                 lda explosionframe
                 sta $07f8
                 sta $07f9
                 sta $07fa
+                lda #$af
+                sta $07fb
+                sta $07fc
+                sta $07fd
+                sta $07fe
+                sta $07ff
                 lda objpos
                 sec
                 sbc #4
@@ -1937,6 +2006,8 @@ snakedestroyer
                 sta objpos+9
                 lda objpos+5
                 sta objpos+11
+               
+                
                 lda #1
                 sta $d02a
                 sta $d02b
@@ -1972,6 +2043,7 @@ explosionloop   jsr synctimer
                 jsr expandmsb
                 jsr animexplosion
                 jsr animexplodecol
+                
                 jmp explosionloop
 animexplosion            
                 lda explodeanimdelay
@@ -2000,6 +2072,7 @@ animexplodecol  lda expcoldelay
                 rts
 expscene        lda #0
                 sta expcoldelay
+                
                 ldx expcoltimer
                 lda expcoltable,x
                 sta $d021
@@ -2014,14 +2087,13 @@ setasblack      ldx #11
                 
 ;Explosion has finished, morph explosion sprites to dead snake                
 
-morphtodeadsnake
+morphtodeadsnake  jsr clearspritepos
                 ldx #0
                 stx explodeanimpointer
                 
                 lda #gameovermusic
                 jsr musicinit
-                lda #0
-                sta $d015
+               
                 ldx #0
 makegameoverspr lda gameoverspritetable,x
                 sta $07fa,x
@@ -2034,8 +2106,10 @@ makegameoverspr lda gameoverspritetable,x
                 sta objpos+1
                 sta objpos+3
                 sta objpos+5
-                    
-;Now place game over sprites
+                
+;-------------------------------------------        
+                
+;Place game over sprites
                 
                 ldx #$00
 readgopos       lda gameoverpos,x
@@ -2044,6 +2118,7 @@ readgopos       lda gameoverpos,x
                 cpx #$0c
                 bne readgopos
                
+;-------------------------------------------        
                 
 ;Game over loop
                 
@@ -2089,7 +2164,98 @@ spritesinus     ldx sinuspointer
                 inc sinuspointer
                 rts
                    
+clearspritepos
+                lda #0
+                sta $d015
+                ldy #$00
+zop             lda #$00
+                sta $d000,y
+                iny
+                cpy #$10
+                bne zop
+                rts
+                
+;-------------------------------------------        
+
+; Kill off all IRQ interrupts that are currently playing also
+; make a short delay, in order to prevent sensitive fire
+;button pressing
+
+;-------------------------------------------        
+
+killirqs        lda #$35
+                sta $01
+                sei
+                
                
+               
+                
+                lda #$00
+                sta $d019
+                sta $d01a
+                
+                lda #$81
+                sta $dc0d
+                sta $dd0d
+                ldx #$48
+                ldy #$ff
+                stx $fffe
+                sty $ffff
+                ldx #<nmi
+                ldy #>nmi
+                stx $fffa
+                sty $fffb
+                
+               ;  lda #$00
+               ; sta $d011
+                sta $d015
+                sta $d01b
+                 
+                 ldx #$00
+clearscreent    lda #$00
+                sta $0400,x
+                sta $0500,x
+                sta $0600,x
+                sta $06e8,x
+                sta $d800,x
+                sta $d900,x
+                sta $da00,x
+                sta $dae8,x
+                inx
+                bne clearscreent
+                
+                
+                ;Silence the SID chip
+                ldx #$00
+quiet           lda #$00
+                sta $d400,x
+                inx
+                cpx #$18
+                bne quiet
+                
+                ;Sprite position also 
+                
+                ldx #$00
+zerosprposy     lda #$00
+                sta $d000,x
+                sta objpos,x
+                inx
+                cpx #$10
+                bne zerosprposy
+                
+                ;Pointless, but useful delay routine
+                
+                ldx #$00
+delay1          ldy #$00
+delay2          iny
+                bne delay2
+                inx
+                bne delay1
+                rts
+               
+;-------------------------------------------                         
+
+;Load in game pointers source.
                 !source "pointers.asm"
                     
           

@@ -1,4 +1,4 @@
-sprite00x = objpos
+﻿sprite00x = objpos
 sprite00y = objpos+1
 sprite01x = objpos+2
 sprite01y = objpos+3
@@ -37,8 +37,6 @@ split7 = $ea;Paralax layer 4 - The plants (bottom)
 split8 = $fa ;Copy of split 7 
 ;Scroll control
 
-rowtemp = $80
-colourtemp = $90
 
 ;Object spawn row/column position
 

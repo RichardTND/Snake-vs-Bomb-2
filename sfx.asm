@@ -1,4 +1,4 @@
-snakeapplessfx
+﻿snakeapplessfx
         !byte $0E,$00,$08,$B0,$41,$BA,$B8,$B6,$B4,$B2,$B0,$B2,$B4,$B6,$B8,$BA
         !byte $00
 

@@ -1,115 +1,137 @@
-;DISK ACCESS
-!ct scr
-dname !text "S:" ;Scratch/overwrite filename
-fname !text "-HALL OF FAME!-"
+﻿
+dname:  !text "S:"
+fname:  !text "-HALL OF FAME!-"
 fnamelen = *-fname
 dnamelen = *-dname
 
-;Call subroutine for saving hi scores
-
 savehiscores
-        lda cheatmodeon
-        cmp #1
-        beq skiphiscoresaver
-        jsr killirqs
-        jsr savefile
-skiphiscoresaver
-        rts
-        
-;Loading hi scores        
+SaveHiScore:
+      
+      jsr DisableInts 
+    
+      jsr savefile
+    
 
-loadhiscores
-        lda #0
-        sta $d020
-        sta $d021
-        lda #$0b
-        sta $d011
-        jsr loadfile
-skiphiscoreloader
-        rts
-        
-;Saving hi scores main routine        
-
+      rts
+      
+loadhiscores   
+      lda #0
+      sta $d020
+      sta $d021
+      sta $d011
+     
+     
+     ; jsr DisableInts 
+ 
+      jsr loadfile
+      
+      rts
+DisableInts:
+      sei 
+      
+      lda #$48 
+      sta $fffe 
+      lda #$ff 
+      sta $ffff 
+      lda #$31
+      sta $0314
+      lda #$ea
+      sta $0315
+      lda #0
+      sta $d019 
+      sta $d01a 
+      sta $d015 
+      lda #$81 
+      sta $dc0d
+      sta $dd0d
+      ldx #$00 
+clrsid:   lda #0 
+      sta $d400,x
+      inx
+      cpx #$18 
+      bne clrsid 
+      lda #$0b 
+      sta $d011 
+      lda #$36 
+      sta $01 
+      cli 
+      jsr $ff81 ;Init screen RAM
+      jsr $ff84 ;Init CIA and IRQ
+      lda #0
+      sta $d020
+      sta $d021
+      rts 
+      
 savefile
-        lda #$0b
-        sta $d011
-        
-        ;Check last device
-        
-        ldx device
-        cmp #$08
-        bcc skipsave ;No Drive or found tape drive
-        lda #$0f
-        tay
-        jsr $ffba
-        jsr resetdevice
-        lda #dnamelen
-        ldx #<dname
-        ldy #>dname
-        jsr $ffbd
-        jsr $ffc0
-        lda #$0f
-        jsr $ffc3
-        jsr $ffcc
-        
-        lda #$0f
-        ldx device
-        tay
-        jsr $ffba
-        jsr resetdevice
-        
-        lda #fnamelen
-        ldx #<fname
-        ldy #>fname
-        jsr $ffbd
-        lda #$fb
-        ldx #<hiscoresavestart
-        ldy #>hiscoresavestart
-        stx $fb
-        sty $fc
-        ldx #<hiscoresaveend
-        ldy #>hiscoresaveend
-        jsr $ffd8
+      ldx $ba
+      cpx #$08 
+      bcc skipsave 
+      lda #$0f 
+      tay
+      jsr $ffba
+      jsr resetdevice
+      lda #dnamelen 
+      ldx #<dname 
+      ldy #>dname 
+      jsr $ffbd 
+      jsr $ffc0
+      lda #$0f 
+      jsr $ffc3 
+      jsr $ffcc
+      
+      lda #$0f 
+      ldx $ba 
+      tay
+      jsr $ffba 
+      jsr resetdevice
+      lda #fnamelen 
+      ldx #<fname 
+      ldy #>fname 
+      jsr $ffbd 
+      lda #$fb 
+      ldx #<hiscoresavestart
+      ldy #>hiscoresavestart
+      stx $fb 
+      sty $fc 
+      ldx #<hiscoresaveend
+      ldy #>hiscoresaveend
+      jsr $ffd8
 skipsave
-        rts
-        
-;Load file from disk
-
-loadfile  
-        ldx device
-        cpx #$08
-        bcc skipload
-        
-        lda #$0f
-        tay
-        jsr $ffba
-        jsr resetdevice
-        
-        lda #fnamelen
-        ldx #<fname
-        ldy #>fname
-        jsr $ffbd
-        lda #$00
-        jsr $ffd5
-        bcc loaded
-        jsr savefile
+      rts
+      
+loadfile
+      ldx $ba 
+      cpx #$08 
+      bcc skipload 
+      
+      lda #$0f 
+      tay 
+      jsr $ffba 
+      jsr resetdevice 
+      lda #fnamelen 
+      ldx #<fname 
+      ldy #>fname
+      jsr $ffbd
+      lda #$00 
+      jsr $ffd5 
+      bcc loaded
+      jsr savefile
 loaded
-skipload
-        rts
-        
-;Initialize disk drive
+
+skipload rts
 
 resetdevice
-        lda #$01
-        ldx #<initdrive
-        ldy #>initdrive
-        jsr $ffbd
-        jsr $ffc0
-        lda #$0f
-        jsr $ffc3
-        jsr $ffcc
-        rts
-!ct scr        
-initdrive        
-        !text "I:"
-device  !byte 8        
+      lda #$01 
+      ldx #<initdrive
+      ldy #>initdrive
+      jsr $ffbd 
+      jsr $ffc0 
+      lda #$0f 
+      jsr $ffc3 
+      jsr $ffcc
+      rts
+      
+initdrive
+      !text "I:"
+
+      rts

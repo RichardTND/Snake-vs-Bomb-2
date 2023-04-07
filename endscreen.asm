@@ -1,4 +1,4 @@
-;End screen
+﻿;End screen
 
 endscreen         jsr killirqs
 
@@ -20,7 +20,9 @@ drawend           lda endscreentext,x
                   sta $dae8,x
                   inx
                   bne drawend
-                  
+                  lda #0
+                  sta $d020
+                  sta $d021
                   lda #$18
                   sta $d016
                   lda #$1e
@@ -33,8 +35,8 @@ drawend           lda endscreentext,x
                   ldx #<singleirq
                   ldy #>singleirq
                   lda #$7f
-                  stx $0314
-                  sty $0315
+                  stx $fffe
+                  sty $ffff
                   sta $dc0d
                   sta $dd0d
                   lda #$22
@@ -61,6 +63,9 @@ endloop           lda $dc00
                   bvc endloop
                   jmp checkhiscore
 singleirq          
+                  sta estacka+1
+                  stx estackx+1
+                  sty estacky+1
                   asl $d019
                   lda $dc0d
                   sta $dd0d
@@ -70,5 +75,8 @@ singleirq
                   sta rt
                   jsr musicplayer
                   jsr titleanimbombs
-stacka            jmp $ea7e
+estacka           lda #$00
+estackx           ldx #$00
+estacky           ldy #$00                  
+                  rti
                   

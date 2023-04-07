@@ -1,26 +1,33 @@
- 
+﻿;SNAKE VS BOMB 2 
 ;TITLE SCREEN CODE
+
+;-------------------------------------------        
 
 ;Kill off all IRQS, sprites, etc.
 
 titlescreen     jsr killirqs
 
-;Setup graphics colour mode
-                
+;-------------------------------------------        
+
+;Reset the scrolling message, and also 
+;setup the hardware settings on the 
+;title screen
+
                 ;Initialise scroll text
-                jsr randomizer
-                
                 lda #<scrolltext
                 sta messread+1
                 lda #>scrolltext
                 sta messread+2
-                
-                lda #0
-                sta $d020
-                sta $d021
-                sta $d011
-                lda #$02
-                sta $d022
+
+                ;VIC2 default settings before
+                ;running interrupts
+               
+                lda #0      
+                sta $d020   
+                sta $d021   
+                sta $d011   
+                lda #$02      
+                sta $d022   
                 lda #$07
                 sta $d023
                 lda #$1e
@@ -53,18 +60,18 @@ defaultcolour   lda #$0d
                 sta pagedelay
                 sta pagedelay+1
                 sta tdelay 
+;-------------------------------------------        
                 
-;Setup IRQ raster interrupts
+;Prepare title screen IRQ raster interrupts
 
                 ldx #<tirq1
                 ldy #>tirq1
                 lda #$7f
-                stx $0314
-                sty $0315
+                stx $fffe
+                sty $ffff
                 sta $dc0d
                 sta $dd0d
-                lda $dc0d
-                lda $dd0d
+                
                 lda #$02
                 sta $d012
                 lda #$1b
@@ -75,13 +82,22 @@ defaultcolour   lda #$0d
                 lda #titlemusic
                 jsr musicinit
                 cli
+                
+;IRQ has been setup, jump to the title 
+;screen code loop.
+                
                 jmp titleloop
+                
+;-------------------------------------------        
                 
 ;IRQ raster interrupts (Split into 3 parts, scroller, logo, screen)
 
 ;Raster 1 - X Scroller                 
 
-tirq1           asl $d019
+tirq1           sta tstacka+1
+                stx tstackx+1
+                sty tstacky+1
+                asl $d019
                 lda $dc0d
                 sta $dd0d
                 lda #$22
@@ -98,13 +114,19 @@ tirq1           asl $d019
                 sta $dd00
                 ldx #<tirq2
                 ldy #>tirq2
-                stx $0314
-                sty $0315
-                jmp $ea7e
+                stx $fffe
+                sty $ffff
+tstacka        lda #$00
+tstackx        ldx #$00
+tstacky        ldy #$00                
+                rti
                 
 ;Raster 2 - Logo bitmap                
 
-tirq2           asl $d019
+tirq2           sta tstack2a+1
+                stx tstack2x+1
+                sty tstack2y+1
+                asl $d019
                 lda #$82
                 sta $d012
                 
@@ -118,13 +140,19 @@ tirq2           asl $d019
                 sta $dd00
                 ldx #<tirq3
                 ldy #>tirq3
-                stx $0314
-                sty $0315
-tstacka2        jmp $ea7e
+                stx $fffe
+                sty $ffff
+tstack2a        lda #$00
+tstack2x        ldx #$00
+tstack2y        ldy #$00
+                rti
 
 ;Raster 3 - Still text 
 
-tirq3           asl $d019
+tirq3           sta tstack3a+1
+                stx tstack3x+1
+                sty tstack3y+1
+                asl $d019
                 lda #$e8
                 sta $d012
                 lda #$03
@@ -141,9 +169,14 @@ tirq3           asl $d019
                 
                 ldx #<tirq1
                 ldy #>tirq1
-                stx $0314
-                sty $0315
-                jmp $ea7e
+                stx $fffe
+                sty $ffff
+tstack3a        lda #$00
+tstack3x        ldx #$00
+tstack3y        ldy #$00                
+                rti
+
+;-------------------------------------------        
 
 ;Main title screen loop                
                 
@@ -161,16 +194,25 @@ titleloop       jsr synctimer
                 ror firebutton
                 bmi titleloop
                 bvc titleloop
+                lda #$00
+                sta $d011
                 jmp gamestart
-                
-;Message scroller
 
-scroller        lda xpos
+;-------------------------------------------        
+
+;1x2 scrolling message routine. Controls
+;the $D016 value to make scrolling smooth
+;after hardware value placed inside IRQ.
+
+scroller        lda xpos 
                 sec
-                sbc #2
+                sbc #2 ;Speed of scroll
                 and #7
                 sta xpos
                 bcs exitscroll
+                
+;Shift both layers of scroll text 39 columns 
+                
                 ldx #$00
 scrloop         lda screen+(23*40)+1,x
                 sta screen+(23*40),x
@@ -183,6 +225,11 @@ scrloop         lda screen+(23*40)+1,x
                 cpx #$28
                 bne scrloop
                 
+;Read scroll text and if @ is found (byte 0)
+;then reset the scroll. Otherwise store the
+;current character read from "scrolltext"
+;and position to last column of each row on screen
+                
 messread        lda scrolltext
                 cmp #$00
                 bne storet
@@ -191,6 +238,9 @@ messread        lda scrolltext
                 lda #>scrolltext
                 sta messread+2
                 jmp messread
+                
+;Store scroll text and convert to the 1x2 font
+;segment read from the charset memory. 
                 
 storet          clc
                 adc #$80
@@ -204,9 +254,9 @@ storet          clc
                 bne exitscroll
                 inc messread+2
 exitscroll      rts                
+;-------------------------------------------        
 
-                
-;Display credits
+;Display credits screen (read from creditstext)
 
 displaycredits  ldx #$00
 copycredits     lda creditstext,x
@@ -235,6 +285,8 @@ copycredits     lda creditstext,x
                 cpx #$28
                 bne copycredits
                 rts
+
+;-------------------------------------------        
                 
 ;Display hi score table                
                 
@@ -266,6 +318,8 @@ hidisplay       lda hiscoretable,x
                 cpx #$28
                 bne hidisplay
                 rts
+
+;-------------------------------------------        
                 
 ;Display objects list
 
@@ -297,6 +351,8 @@ objdisplay      lda scoringlist,x
                 cpx #$28
                 bne objdisplay
                 rts
+
+;-------------------------------------------        
                 
 ;Animate title screen bomb charset
 
@@ -327,6 +383,8 @@ tanimstep3     lda animbombsrct,x
                cpx #$08
                bne tanimstep3
                rts
+
+;-------------------------------------------        
 
 ;Page flipper
 
@@ -360,8 +418,11 @@ setupobjects   jsr displayobjects
                lda #0
                sta pageno
                rts
+
+;-------------------------------------------        
                
-                
+;Title screen pointers
+
 xpos !byte 0                
 tdelay !byte 0   
 pagedelay !byte 0,0
