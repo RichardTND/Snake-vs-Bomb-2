@@ -1,4 +1,4 @@
-﻿
+
 dname:  !text "S:"
 fname:  !text "-HALL OF FAME!-"
 fnamelen = *-fname
@@ -8,10 +8,12 @@ savehiscores
 SaveHiScore:
       
       jsr DisableInts 
-    
+     lda cheatmodeon
+                cmp #1
+                beq nohiscore1
       jsr savefile
     
-
+nohiscore1
       rts
       
 loadhiscores   
@@ -29,10 +31,7 @@ loadhiscores
 DisableInts:
       sei 
       
-      lda #$48 
-      sta $fffe 
-      lda #$ff 
-      sta $ffff 
+     
       lda #$31
       sta $0314
       lda #$ea

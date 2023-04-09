@@ -1,4 +1,4 @@
-﻿sprite00x = objpos
+sprite00x = objpos
 sprite00y = objpos+1
 sprite01x = objpos+2
 sprite01y = objpos+3

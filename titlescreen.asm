@@ -1,4 +1,4 @@
-﻿;SNAKE VS BOMB 2 
+;SNAKE VS BOMB 2 
 ;TITLE SCREEN CODE
 
 ;-------------------------------------------        
@@ -67,8 +67,8 @@ defaultcolour   lda #$0d
                 ldx #<tirq1
                 ldy #>tirq1
                 lda #$7f
-                stx $fffe
-                sty $ffff
+                stx $0314
+                sty $0315
                 sta $dc0d
                 sta $dd0d
                 
@@ -94,10 +94,7 @@ defaultcolour   lda #$0d
 
 ;Raster 1 - X Scroller                 
 
-tirq1           sta tstacka+1
-                stx tstackx+1
-                sty tstacky+1
-                asl $d019
+tirq1           inc $d019
                 lda $dc0d
                 sta $dd0d
                 lda #$22
@@ -114,19 +111,13 @@ tirq1           sta tstacka+1
                 sta $dd00
                 ldx #<tirq2
                 ldy #>tirq2
-                stx $fffe
-                sty $ffff
-tstacka        lda #$00
-tstackx        ldx #$00
-tstacky        ldy #$00                
-                rti
+                stx $0314
+                sty $0315
+                jmp $ea7e
                 
 ;Raster 2 - Logo bitmap                
 
-tirq2           sta tstack2a+1
-                stx tstack2x+1
-                sty tstack2y+1
-                asl $d019
+tirq2           inc $d019
                 lda #$82
                 sta $d012
                 
@@ -140,19 +131,13 @@ tirq2           sta tstack2a+1
                 sta $dd00
                 ldx #<tirq3
                 ldy #>tirq3
-                stx $fffe
-                sty $ffff
-tstack2a        lda #$00
-tstack2x        ldx #$00
-tstack2y        ldy #$00
-                rti
+                stx $0314
+                sty $0315
+                jmp $ea7e
 
 ;Raster 3 - Still text 
 
-tirq3           sta tstack3a+1
-                stx tstack3x+1
-                sty tstack3y+1
-                asl $d019
+tirq3           inc $d019
                 lda #$e8
                 sta $d012
                 lda #$03
@@ -169,12 +154,9 @@ tirq3           sta tstack3a+1
                 
                 ldx #<tirq1
                 ldy #>tirq1
-                stx $fffe
-                sty $ffff
-tstack3a        lda #$00
-tstack3x        ldx #$00
-tstack3y        ldy #$00                
-                rti
+                stx $0314
+                sty $0315
+                jmp $ea7e
 
 ;-------------------------------------------        
 

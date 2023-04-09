@@ -1,4 +1,4 @@
-﻿
+
   !to "tndlinker_disk.prg",cbm
   
     *=$0801

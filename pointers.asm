@@ -1,4 +1,4 @@
-﻿ 
+ 
 ;GAME POINTERS
 rt !byte 0    
 system !byte 0

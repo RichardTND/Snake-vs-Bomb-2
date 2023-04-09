@@ -1,4 +1,4 @@
-﻿;SNAKE VS BOMB 2
+;SNAKE VS BOMB 2
 ;GAME CODE
       
 ;-------------------------------------------        
@@ -207,8 +207,8 @@ setd016table
                 txs
                 ldx #<gameirq1
                 ldy #>gameirq1
-                stx $fffe
-                sty $ffff
+                stx $0314
+                sty $0315
                 lda #$7f
                 sta $dc0d
                 sta $dd0d
@@ -538,10 +538,10 @@ parallax1       jsr scrollmountains
 ;scrolling.
 
 parallax2                
-               
+                jsr scrollmainscreen
                 jsr scrollplantsbottom
-                jsr scrollrocksbottom
-                jmp scrollmainscreen
+                jmp scrollrocksbottom
+                
 
 ;-------------------------------------------        
 
@@ -2183,11 +2183,11 @@ zop             lda #$00
 
 ;-------------------------------------------        
 
-killirqs        lda #$35
-                sta $01
+killirqs         
                 sei
                 
-               
+                lda #$36
+                sta $01
                
                 
                 lda #$00
@@ -2197,14 +2197,12 @@ killirqs        lda #$35
                 lda #$81
                 sta $dc0d
                 sta $dd0d
-                ldx #$48
-                ldy #$ff
-                stx $fffe
-                sty $ffff
-                ldx #<nmi
-                ldy #>nmi
-                stx $fffa
-                sty $fffb
+                lda #251
+                sta $0328
+                ldx #$31
+                ldy #$ea
+                stx $0314
+                sty $0315
                 
                ;  lda #$00
                ; sta $d011

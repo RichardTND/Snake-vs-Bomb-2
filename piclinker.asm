@@ -1,4 +1,4 @@
-﻿;Snake vs Bomb 2 intro pic linker
+;Snake vs Bomb 2 intro pic linker
 
   !to "piclinker.prg",cbm
   
@@ -188,7 +188,7 @@ musicplayer
   inc ntsctimer
   lda ntsctimer
   cmp #6
-  bne exitntsc
+  beq exitntsc
 pal
   jsr $1003
   rts

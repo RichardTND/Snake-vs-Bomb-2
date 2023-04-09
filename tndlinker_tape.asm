@@ -1,4 +1,4 @@
-﻿
+
   !to "tndlinker_tape.prg",cbm
   
     *=$0801
