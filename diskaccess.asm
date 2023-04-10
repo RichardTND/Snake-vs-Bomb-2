@@ -6,7 +6,7 @@ dnamelen = *-dname
 
 savehiscores
 SaveHiScore:
-      
+      jsr copyhiscoredatatolowmem
       jsr DisableInts 
      lda cheatmodeon
                 cmp #1
@@ -51,14 +51,14 @@ clrsid:   lda #0
       bne clrsid 
       lda #$0b 
       sta $d011 
-      lda #$36 
-      sta $01 
+      
       cli 
-      jsr $ff81 ;Init screen RAM
-      jsr $ff84 ;Init CIA and IRQ
+      jsr copyhiscoredatatolowmem
       lda #0
       sta $d020
       sta $d021
+       lda #$36 
+      sta $01 
       rts 
       
 savefile
@@ -99,6 +99,8 @@ skipsave
       rts
       
 loadfile
+      lda #$36
+      sta $01
       ldx $ba 
       cpx #$08 
       bcc skipload 
@@ -111,13 +113,23 @@ loadfile
       ldx #<fname 
       ldy #>fname
       jsr $ffbd
+     
       lda #$00 
       jsr $ffd5 
-      bcc loaded
+      bcc skipload
+      jsr copyhiscoredatatolowmem
       jsr savefile
-loaded
-
-skipload rts
+    
+      
+skipload
+        ldx #$00
+copytablelen
+      lda $16c9,x
+      sta $a6c9,x
+      inx
+      cpx #$c6
+      bne copytablelen
+      rts
 
 resetdevice
       lda #$01 
@@ -130,6 +142,15 @@ resetdevice
       jsr $ffcc
       rts
       
+copyhiscoredatatolowmem
+      ldx #$00
+fetchtable
+      lda $a6c9,x
+      sta $16c9,x
+      inx
+      cpx #$c6
+      bne fetchtable
+      rts
 initdrive
       !text "I:"
 

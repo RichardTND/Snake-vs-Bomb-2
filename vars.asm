@@ -167,8 +167,10 @@ name10 = $a77f
 hiscorestart = $a6a0  ;Target position for first digit for hi score
 hiscoreend = $a768
 
-hiscoresavestart = $a6c9
-hiscoresaveend = $a78f
+hiscoresavestart = $16c9
+hiscoresaveend = $178f
+hiscoreloadstart = $a6c9
+
 
 hiscore1 = $a6d5
 hiscore2 = $a6fd
